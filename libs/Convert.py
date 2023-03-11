@@ -203,15 +203,19 @@ def info_convert(uid, chara_index):
         elif i["flat"]["equipType"] == "EQUIP_DRESS":
             dress_data = i
 
-    artifacts_data = {
-        'flower': ja_name_list.get(bracer_data["flat"]["setNameTextMapHash"]),
-        'wing': ja_name_list.get(necklace_data["flat"]["setNameTextMapHash"]),
-        'clock': ja_name_list.get(shoes_data["flat"]["setNameTextMapHash"]),
-        'cup': ja_name_list.get(ring_data["flat"]["setNameTextMapHash"]),
-        'crown': ja_name_list.get(dress_data["flat"]["setNameTextMapHash"])
-    }
+    artifacts_data['flower'] = ja_name_list.get(bracer_data["flat"]["setNameTextMapHash"]) if bracer_data else None
+    artifacts_data['wing'] = ja_name_list.get(necklace_data["flat"]["setNameTextMapHash"]) if necklace_data else None
+    artifacts_data['clock'] = ja_name_list.get(shoes_data["flat"]["setNameTextMapHash"]) if shoes_data else None
+    artifacts_data['cup'] = ja_name_list.get(ring_data["flat"]["setNameTextMapHash"]) if ring_data else None
+    artifacts_data['crown'] = ja_name_list.get(dress_data["flat"]["setNameTextMapHash"]) if dress_data else None
 
-    atf_type = [artifacts_data[parts] for parts in ['flower', "wing", "clock", "cup", "crown"]]
+    atf_type = list()
+    for parts in ['flower', "wing", "clock", "cup", "crown"]:
+        if artifacts_data[parts]:
+            atf_type.append(artifacts_data[parts])
+        else:
+            continue
+
     set_bounus = Counter([x for x in atf_type if atf_type.count(x) >= 2])
     final_set_bounus = list()
     for n, q in set_bounus.items():
@@ -258,99 +262,114 @@ def artifacts_convert(uid, c_type):
     # 花
     data['Artifacts']['flower'] = {}
     flower = data['Artifacts']['flower']
-    flower['type'] = ja_name_list.get(bracer_data["flat"]["setNameTextMapHash"])
-    flower['main'] = {}
-    flower['main']['option'] = append_prop_list.get(bracer_data["flat"]["reliquaryMainstat"]["mainPropId"])
-    flower['main']['value'] = bracer_data["flat"]["reliquaryMainstat"]["statValue"]
-    flower['sub'] = []
-    flower['Level'] = bracer_data["reliquary"]["level"] - 1
-    flower['rarelity'] = bracer_data["flat"]["rankLevel"]
+    if bracer_data:
+        flower['type'] = ja_name_list.get(bracer_data["flat"]["setNameTextMapHash"])
+        flower['main'] = {}
+        flower['main']['option'] = append_prop_list.get(bracer_data["flat"]["reliquaryMainstat"]["mainPropId"])
+        flower['main']['value'] = bracer_data["flat"]["reliquaryMainstat"]["statValue"]
+        flower['sub'] = []
+        flower['Level'] = bracer_data["reliquary"]["level"] - 1
+        flower['rarelity'] = bracer_data["flat"]["rankLevel"]
 
-    for sub in bracer_data["flat"]["reliquarySubstats"]:
-        append_data = {
-            "option": append_prop_list.get(sub["appendPropId"]),
-            "value": sub["statValue"]
-        }
-        flower['sub'].append(append_data)
+        for sub in bracer_data["flat"]["reliquarySubstats"]:
+            append_data = {
+                "option": append_prop_list.get(sub["appendPropId"]),
+                "value": sub["statValue"]
+            }
+            flower['sub'].append(append_data)
+    else:
+        flower = {}
 
     # 羽
     data['Artifacts']['wing'] = {}
     wing = data['Artifacts']['wing']
-    wing['type'] = ja_name_list.get(necklace_data["flat"]["setNameTextMapHash"])
-    wing['main'] = {}
-    wing['main']['option'] = append_prop_list.get(necklace_data["flat"]["reliquaryMainstat"]["mainPropId"])
-    wing['main']['value'] = necklace_data["flat"]["reliquaryMainstat"]["statValue"]
-    wing['sub'] = []
-    wing['Level'] = necklace_data["reliquary"]["level"] - 1
-    wing['rarelity'] = necklace_data["flat"]["rankLevel"]
+    if necklace_data:
+        wing['type'] = ja_name_list.get(necklace_data["flat"]["setNameTextMapHash"])
+        wing['main'] = {}
+        wing['main']['option'] = append_prop_list.get(necklace_data["flat"]["reliquaryMainstat"]["mainPropId"])
+        wing['main']['value'] = necklace_data["flat"]["reliquaryMainstat"]["statValue"]
+        wing['sub'] = []
+        wing['Level'] = necklace_data["reliquary"]["level"] - 1
+        wing['rarelity'] = necklace_data["flat"]["rankLevel"]
 
-    for sub in necklace_data["flat"]["reliquarySubstats"]:
-        append_data = {
-            "option": append_prop_list.get(sub["appendPropId"]),
-            "value": sub["statValue"]
-        }
-        wing['sub'].append(append_data)
+        for sub in necklace_data["flat"]["reliquarySubstats"]:
+            append_data = {
+                "option": append_prop_list.get(sub["appendPropId"]),
+                "value": sub["statValue"]
+            }
+            wing['sub'].append(append_data)
+    else:
+        wing = {}
 
     # 時計
     data['Artifacts']['clock'] = {}
     clock = data['Artifacts']['clock']
-    clock['type'] = ja_name_list.get(shoes_data["flat"]["setNameTextMapHash"])
-    clock['main'] = {}
-    clock['main']['option'] = append_prop_list.get(shoes_data["flat"]["reliquaryMainstat"]["mainPropId"])
-    clock['main']['value'] = shoes_data["flat"]["reliquaryMainstat"]["statValue"]
-    clock['sub'] = []
-    clock['Level'] = shoes_data["reliquary"]["level"] - 1
-    clock['rarelity'] = shoes_data["flat"]["rankLevel"]
+    if shoes_data:
+        clock['type'] = ja_name_list.get(shoes_data["flat"]["setNameTextMapHash"])
+        clock['main'] = {}
+        clock['main']['option'] = append_prop_list.get(shoes_data["flat"]["reliquaryMainstat"]["mainPropId"])
+        clock['main']['value'] = shoes_data["flat"]["reliquaryMainstat"]["statValue"]
+        clock['sub'] = []
+        clock['Level'] = shoes_data["reliquary"]["level"] - 1
+        clock['rarelity'] = shoes_data["flat"]["rankLevel"]
 
-    for sub in shoes_data["flat"]["reliquarySubstats"]:
-        append_data = {
-            "option": append_prop_list.get(sub["appendPropId"]),
-            "value": sub["statValue"]
-        }
-        clock['sub'].append(append_data)
+        for sub in shoes_data["flat"]["reliquarySubstats"]:
+            append_data = {
+                "option": append_prop_list.get(sub["appendPropId"]),
+                "value": sub["statValue"]
+            }
+            clock['sub'].append(append_data)
+    else:
+        clock = {}
 
     # 杯
     data['Artifacts']['cup'] = {}
     cup = data['Artifacts']['cup']
-    cup['type'] = ja_name_list.get(ring_data["flat"]["setNameTextMapHash"])
-    cup['main'] = {}
-    cup['main']['option'] = append_prop_list.get(ring_data["flat"]["reliquaryMainstat"]["mainPropId"])
-    cup['main']['value'] = ring_data["flat"]["reliquaryMainstat"]["statValue"]
-    cup['sub'] = []
-    cup['Level'] = ring_data["reliquary"]["level"] - 1
-    cup['rarelity'] = ring_data["flat"]["rankLevel"]
+    if ring_data:
+        cup['type'] = ja_name_list.get(ring_data["flat"]["setNameTextMapHash"])
+        cup['main'] = {}
+        cup['main']['option'] = append_prop_list.get(ring_data["flat"]["reliquaryMainstat"]["mainPropId"])
+        cup['main']['value'] = ring_data["flat"]["reliquaryMainstat"]["statValue"]
+        cup['sub'] = []
+        cup['Level'] = ring_data["reliquary"]["level"] - 1
+        cup['rarelity'] = ring_data["flat"]["rankLevel"]
 
-    for sub in ring_data["flat"]["reliquarySubstats"]:
-        append_data = {
-            "option": append_prop_list.get(sub["appendPropId"]),
-            "value": sub["statValue"]
-        }
-        cup['sub'].append(append_data)
+        for sub in ring_data["flat"]["reliquarySubstats"]:
+            append_data = {
+                "option": append_prop_list.get(sub["appendPropId"]),
+                "value": sub["statValue"]
+            }
+            cup['sub'].append(append_data)
+    else:
+        cup = {}
 
     # 冠
     data['Artifacts']['crown'] = {}
     crown = data['Artifacts']['crown']
-    crown['type'] = ja_name_list.get(dress_data["flat"]["setNameTextMapHash"])
-    crown['main'] = {}
-    crown['main']['option'] = append_prop_list.get(dress_data["flat"]["reliquaryMainstat"]["mainPropId"])
-    crown['main']['value'] = dress_data["flat"]["reliquaryMainstat"]["statValue"]
-    crown['sub'] = []
-    crown['Level'] = dress_data["reliquary"]["level"] - 1
-    crown['rarelity'] = dress_data["flat"]["rankLevel"]
+    if dress_data:
+        crown['type'] = ja_name_list.get(dress_data["flat"]["setNameTextMapHash"])
+        crown['main'] = {}
+        crown['main']['option'] = append_prop_list.get(dress_data["flat"]["reliquaryMainstat"]["mainPropId"])
+        crown['main']['value'] = dress_data["flat"]["reliquaryMainstat"]["statValue"]
+        crown['sub'] = []
+        crown['Level'] = dress_data["reliquary"]["level"] - 1
+        crown['rarelity'] = dress_data["flat"]["rankLevel"]
 
-    for sub in dress_data["flat"]["reliquarySubstats"]:
-        append_data = {
-            "option": append_prop_list.get(sub["appendPropId"]),
-            "value": sub["statValue"]
-        }
-        crown['sub'].append(append_data)
+        for sub in dress_data["flat"]["reliquarySubstats"]:
+            append_data = {
+                "option": append_prop_list.get(sub["appendPropId"]),
+                "value": sub["statValue"]
+            }
+            crown['sub'].append(append_data)
+    else:
+        crown = {}
 
     data['Score']['State'] = c_type
-    data['Score']['flower'] = round(calculate_score(c_type, flower['sub']), 1)
-    data['Score']['wing'] = round(calculate_score(c_type, wing['sub']), 1)
-    data['Score']['clock'] = round(calculate_score(c_type, clock['sub']), 1)
-    data['Score']['cup'] = round(calculate_score(c_type, cup['sub']), 1)
-    data['Score']['crown'] = round(calculate_score(c_type, crown['sub']), 1)
+    data['Score']['flower'] = round(calculate_score(c_type, flower['sub']), 1) if flower else 0
+    data['Score']['wing'] = round(calculate_score(c_type, wing['sub']), 1) if wing else 0
+    data['Score']['clock'] = round(calculate_score(c_type, clock['sub']), 1) if clock else 0
+    data['Score']['cup'] = round(calculate_score(c_type, cup['sub']), 1) if cup else 0
+    data['Score']['crown'] = round(calculate_score(c_type, crown['sub']), 1) if crown else 0
     data['Score']['total'] = round(data['Score']['flower'] + data['Score']['wing'] + data['Score']['clock'] + data['Score']['cup'] + data['Score']['crown'], 1)
 
     return data

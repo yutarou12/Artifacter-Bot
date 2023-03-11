@@ -178,19 +178,31 @@ def info_convert(uid, chara_index):
             if i["appendPropId"] == "FIGHT_PROP_BASE_ATTACK":
                 weapon_base_attack = i["statValue"]
                 weapon_item["flat"]["weaponStats"].remove(i)
-        weapon_sub_op = weapon_item["flat"]["weaponStats"][0]
+        if weapon_item["flat"]["weaponStats"]:
+            weapon_sub_op = weapon_item["flat"]["weaponStats"][0]
+        else:
+            weapon_sub_op = None
 
         data['Weapon']['name'] = ja_name_list.get(weapon_item["flat"]["nameTextMapHash"])
         data['Weapon']['Level'] = weapon_item["weapon"]["level"]
-        data['Weapon']['totu'] = int(list(weapon_item["weapon"]["affixMap"].values())[0]) + 1
+        if weapon_item["weapon"].get("affixMap"):
+            data['Weapon']['totu'] = int(list(weapon_item["weapon"]["affixMap"].values())[0]) + 1
+        else:
+            data['Weapon']['totu'] = 1
         data['Weapon']['rarelity'] = weapon_item["flat"]["rankLevel"]
         data['Weapon']['BaseATK'] = weapon_base_attack
-        data['Weapon']['Sub'] = {
-            "name": append_prop_list.get(weapon_sub_op["appendPropId"]),
-            "value": weapon_sub_op["statValue"]
-        }
+        if weapon_sub_op:
+            data['Weapon']['Sub'] = {
+                "name": append_prop_list.get(weapon_sub_op["appendPropId"]),
+                "value": weapon_sub_op["statValue"]
+            }
     if weapon_item:
         character["equipList"].remove(weapon_item)
+    bracer_data = {}
+    necklace_data = {}
+    shoes_data = {}
+    ring_data = {}
+    dress_data = {}
     for i in character["equipList"]:
         if i["flat"]["equipType"] == "EQUIP_BRACER":
             bracer_data = i
@@ -203,11 +215,13 @@ def info_convert(uid, chara_index):
         elif i["flat"]["equipType"] == "EQUIP_DRESS":
             dress_data = i
 
-    artifacts_data['flower'] = ja_name_list.get(bracer_data["flat"]["setNameTextMapHash"]) if bracer_data else None
-    artifacts_data['wing'] = ja_name_list.get(necklace_data["flat"]["setNameTextMapHash"]) if necklace_data else None
-    artifacts_data['clock'] = ja_name_list.get(shoes_data["flat"]["setNameTextMapHash"]) if shoes_data else None
-    artifacts_data['cup'] = ja_name_list.get(ring_data["flat"]["setNameTextMapHash"]) if ring_data else None
-    artifacts_data['crown'] = ja_name_list.get(dress_data["flat"]["setNameTextMapHash"]) if dress_data else None
+    artifacts_data = {
+        'flower': ja_name_list.get(bracer_data["flat"]["setNameTextMapHash"]) if bracer_data else None,
+        'wing': ja_name_list.get(necklace_data["flat"]["setNameTextMapHash"]) if necklace_data else None,
+        'clock': ja_name_list.get(shoes_data["flat"]["setNameTextMapHash"]) if shoes_data else None,
+        'cup': ja_name_list.get(ring_data["flat"]["setNameTextMapHash"]) if ring_data else None,
+        'crown': ja_name_list.get(dress_data["flat"]["setNameTextMapHash"]) if dress_data else None
+    }
 
     atf_type = list()
     for parts in ['flower', "wing", "clock", "cup", "crown"]:
@@ -246,6 +260,11 @@ def artifacts_convert(uid, c_type):
     artifacts_list = character["equipList"]
 
     # 聖遺物
+    bracer_data = {}
+    necklace_data = {}
+    shoes_data = {}
+    ring_data = {}
+    dress_data = {}
     for i in artifacts_list:
         if i["flat"]["equipType"] == "EQUIP_BRACER":
             bracer_data = i

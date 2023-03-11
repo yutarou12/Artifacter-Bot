@@ -192,8 +192,12 @@ def generation(data):
     weapon_reality: int = weapon.get('rarelity')
     weapon_base_atk: int = weapon.get('BaseATK')
     weapon_sub_op: int = weapon.get('Sub')
-    weapon_sub_op_key: str = weapon_sub_op.get('name')
-    weapon_sub_op_value: str = weapon_sub_op.get('value')
+    if weapon_sub_op:
+        weapon_sub_op_key = weapon_sub_op.get('name')
+        weapon_sub_op_value = weapon_sub_op.get('value')
+    else:
+        weapon_sub_op_key = None
+        weapon_sub_op_value = None
 
     score_data: dict = data.get('Score')
     score_cv_basis: str = score_data.get('State')

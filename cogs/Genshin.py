@@ -90,8 +90,11 @@ class FirstSelect(discord.ui.Select):
                          icon_url=f'https://enka.network/ui/{character["SideIconName"]}.png')
 
         if weapon:
+            value_text = f'**基礎攻撃力**：{weapon["BaseATK"]}'
+            if weapon.get("Sub"):
+                value_text += f'\n**{weapon["Sub"]["name"]}**：{weapon["Sub"]["value"]}'
             embed.add_field(name=f'武器: **Lv{weapon["Level"]} {weapon["name"]}:R{weapon["totu"]}**',
-                            value=f'**基礎攻撃力**：{weapon["BaseATK"]}\n**{weapon["Sub"]["name"]}**：{weapon["Sub"]["value"]}',
+                            value=value_text,
                             inline=False)
 
         embed.add_field(name='ステータス', value=status_text, inline=False)

@@ -30,7 +30,6 @@ class Genshin(commands.Cog):
         if not player:
             return await interaction.followup.send(content='取得できませんでした')
         first_embed = discord.Embed(title=player["Name"])
-        file = None
         if player["Signature"]:
             first_embed.description = player["Signature"]
         first_embed.add_field(name='螺旋', value=player["Tower"])
@@ -59,7 +58,7 @@ class Genshin(commands.Cog):
         view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='防御'))
         view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.red, label='終了'))
 
-        await interaction.followup.send(embed=first_embed, view=view, file=file)
+        await interaction.followup.send(embed=first_embed, view=view)
 
 
 class FirstSelect(discord.ui.Select):

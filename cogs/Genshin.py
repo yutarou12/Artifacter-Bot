@@ -27,6 +27,8 @@ class Genshin(commands.Cog):
                 json.dump(res_data, f, indent=4)
 
         player = self.convert.player_info(uid)
+        if not player:
+            return await interaction.followup.send(content='取得できませんでした')
         first_embed = discord.Embed(title=player["Name"])
         file = None
         if player["Signature"]:
@@ -36,21 +38,7 @@ class Genshin(commands.Cog):
         first_embed.set_footer(text=f'冒険ランク{player["Level"]}・世界ランク{player["worldLevel"]}')
         first_embed.set_thumbnail(url=f'https://enka.network/ui/{player["ProfilePicture"]}.png')
         if player["NameCard"]:
-            if not os.path.exists(f'./NameCard/{player["NameCard"]}.png'):
-                image = requests.get(f'https://enka.network/ui/{player["NameCard"]}.png')
-                with open(f'./NameCard/cache/{player["NameCard"]}.png', mode='wb') as f:
-                    f.write(image.content)
-
-                name_card = Image.open(f'./NameCard/cache/{player["NameCard"]}.png')
-
-                bg_img = Image.new(name_card.mode, name_card.size, name_card.getpixel((0, 0)))
-                diff_img = ImageChops.difference(name_card, bg_img)
-                crop_range = diff_img.convert('RGB').getbbox()
-                crop_img = name_card.crop(crop_range)
-                crop_img.save(f'./NameCard/{player["NameCard"]}.png')
-
-            file = discord.File(f'./NameCard/{player["NameCard"]}.png', filename='image.png')
-            first_embed.set_image(url='attachment://image.png')
+            first_embed.set_image(url=f'https://enka.network/ui/{player["NameCard"]}.png')
 
         view = discord.ui.View(timeout=180)
         if player["showAvatarInfo"]:

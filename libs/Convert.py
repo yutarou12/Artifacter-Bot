@@ -84,7 +84,9 @@ def player_info(uid) -> dict:
 
     data = {}
 
-    player_data = res_data["playerInfo"]
+    player_data = res_data.get("playerInfo")
+    if not player_data:
+        return {}
     name_card = namecards_list.get(str(player_data["nameCardId"]))
     data['Name'] = player_data["nickname"]
     data['Signature'] = player_data.get("signature")
@@ -94,7 +96,7 @@ def player_info(uid) -> dict:
     data['Tower'] = f'{player_data["towerFloorIndex"]}層 {player_data["towerLevelIndex"]}間'
     profile_picture = player_data.get("profilePicture")
     data['ProfilePicture'] = characters_list.get(str(profile_picture["avatarId"]))["iconName"]
-    data['NameCard'] = name_card["icon"] if name_card else None
+    data['NameCard'] = name_card["picPath"][-1] if name_card else None
     data['showAvatarInfo'] = player_data.get("showAvatarInfoList")
 
     return data

@@ -216,7 +216,7 @@ def generation(data):
         else:
             character_image = Image.open(f'{cwd}/character/{character_name}/avatar.png').convert("RGBA")
 
-    shadow = Image.open(f'{cwd}/Assets/shadow.png').resize(base_image.size)
+    shadow = Image.open(f'{cwd}/Assets/Shadow.png').resize(base_image.size)
     character_image = character_image.crop((289, 0, 1728, 1024))
     character_image = character_image.resize((int(character_image.width * 0.75), int(character_image.height * 0.75)))
 

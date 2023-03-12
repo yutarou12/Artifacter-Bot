@@ -548,15 +548,6 @@ def generation(data):
             drew_base.rounded_rectangle((1818, 263, 1862, 288), 1, 'black')
             drew_base.text((1831, 265), str(q), font=config_font(19))
 
-    premium = read_json(f'{cwd}/Assets/premium.json')
-    user_badge = premium.get(f'{data.get("uid")}')
-    if user_badge:
-        for i, b in enumerate(user_badge):
-            badge = Image.open(f'{cwd}/badge/{b}.png').convert('RGBA').resize((38, 38))
-            badge_mask = badge.copy()
-
-            base_image.paste(badge, (1843 - i * 45, 533), mask=badge_mask)
-
     base_image.save(f'{cwd}/Tests/Image.png')
 
     return pil_to_base64(base_image, format='png')

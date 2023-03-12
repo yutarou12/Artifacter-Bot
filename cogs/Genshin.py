@@ -44,22 +44,28 @@ class Genshin(commands.Cog):
 
         view = discord.ui.View(timeout=180)
         if player["showAvatarInfo"]:
-            view_select = FirstSelect(self.bot, uid, player)
+            view_select = FirstSelect(self.bot, uid, player, user=interaction.user)
             for i, chara in enumerate(player["showAvatarInfo"]):
                 name = self.convert.fetch_character(str(chara["avatarId"]))
                 level = chara["level"]
                 view_select.add_option(label=name, description=f'Lv{level}', value=f'{i}')
         else:
-            view_select = FirstSelect(self.bot, uid, player)
+            view_select = FirstSelect(self.bot, uid, player, user=interaction.user)
             view_select.add_option(label='取得できません')
 
         view.add_item(view_select)
-        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='攻撃'))
-        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='HP'))
-        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='チャージ'))
-        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='元素熟知'))
-        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='防御'))
-        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.red, label='終了'))
+        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='攻撃',
+                                 user=interaction.user))
+        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='HP',
+                                 user=interaction.user))
+        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='チャージ',
+                                 user=interaction.user))
+        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='元素熟知',
+                                 user=interaction.user))
+        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='防御',
+                                 user=interaction.user))
+        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.red, label='終了',
+                                 user=interaction.user))
 
         await interaction.followup.send(embed=first_embed, view=view)
 
@@ -74,15 +80,18 @@ class Genshin(commands.Cog):
 
 
 class FirstSelect(discord.ui.Select):
-    def __init__(self, bot, uid, player):
+    def __init__(self, bot, uid, player, user):
         self.bot = bot
         self.uid = uid
         self.player = player
+        self.user = user
         self.convert = self.bot.convert
         super().__init__()
         self.placeholder = "キャラクターを選択"
 
     async def callback(self, interaction: discord.Interaction):
+        if not interaction.user == self.user:
+            return
         self.convert.info_convert(self.uid, int(self.values[0]))
         with open(f'./data/cache/{self.uid}-character.json', mode='r', encoding='utf-8') as f:
             res = json.load(f)
@@ -119,14 +128,17 @@ class FirstSelect(discord.ui.Select):
 
 
 class BaseButton(discord.ui.Button):
-    def __init__(self, bot, uid, player, *args, **kwargs):
+    def __init__(self, bot, uid, player, user, *args, **kwargs):
         self.chara_data = None
         self.player = player
         self.uid = uid
+        self.user = user
         self.convert = bot.convert
         super().__init__(*args, **kwargs)
 
     async def callback(self, interaction: discord.Interaction):
+        if not interaction.user == self.user:
+            return
         if self.label == '終了':
             self.view.stop()
             if os.path.exists(f'./data/cache/{self.uid}-character.json'):

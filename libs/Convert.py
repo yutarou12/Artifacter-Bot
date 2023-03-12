@@ -184,6 +184,7 @@ def info_convert(uid, chara_index):
             weapon_sub_op = None
 
         data['Weapon']['name'] = ja_name_list.get(weapon_item["flat"]["nameTextMapHash"])
+        data['Weapon']['Icon'] = weapon_item["flat"]["icon"]
         data['Weapon']['Level'] = weapon_item["weapon"]["level"]
         if weapon_item["weapon"].get("affixMap"):
             data['Weapon']['totu'] = int(list(weapon_item["weapon"]["affixMap"].values())[0]) + 1

@@ -4,6 +4,7 @@ import codecs
 import json
 import os
 import itertools
+import requests
 from collections import Counter
 import base64
 
@@ -185,13 +186,14 @@ def generation(data, g_id, uid):
     character_base: dict = character_data.get('Base')
     character_talent: dict = character_data.get('Talent')
 
-    weapon: dict = data.get('Weapon')
-    weapon_name: str = weapon.get('name')
-    weapon_level: int = weapon.get('Level')
-    weapon_rank: int = weapon.get('totu')
-    weapon_reality: int = weapon.get('rarelity')
-    weapon_base_atk: int = weapon.get('BaseATK')
-    weapon_sub_op: int = weapon.get('Sub')
+    weapon_: dict = data.get('Weapon')
+    weapon_hash: str = weapon_.get('Hash')
+    weapon_name: str = weapon_.get('name')
+    weapon_level: int = weapon_.get('Level')
+    weapon_rank: int = weapon_.get('totu')
+    weapon_reality: int = weapon_.get('rarelity')
+    weapon_base_atk: int = weapon_.get('BaseATK')
+    weapon_sub_op: int = weapon_.get('Sub')
     if weapon_sub_op:
         weapon_sub_op_key = weapon_sub_op.get('name')
         weapon_sub_op_value = weapon_sub_op.get('value')
@@ -239,7 +241,14 @@ def generation(data, g_id, uid):
     base_image = Image.alpha_composite(base_image, shadow)
 
     # 武器
-    weapon = Image.open(f'{cwd}/weapon/{weapon_name}.png').convert("RGBA").resize((128, 128))
+    try:
+        weapon = Image.open(f'{cwd}/weapon/{weapon_name}.png').convert("RGBA").resize((128, 128))
+    except FileNotFoundError:
+        we_res = requests.get(f'https://enka.network/ui/{weapon_hash.get("Icon")}.png')
+        data = we_res.content
+        with open(f'{cwd}/weapon/{weapon_name}.png', mode='wb') as f:
+            f.write(data)
+        weapon = Image.open(f'{cwd}/weapon/{weapon_name}.png').convert("RGBA").resize((128, 128))
     weapon_paste = Image.new("RGBA", base_image.size, (255, 255, 255, 0))
 
     weapon_mask = weapon.copy()

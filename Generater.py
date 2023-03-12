@@ -174,7 +174,7 @@ def read_json(path):
     return data
 
 
-def generation(data):
+def generation(data, g_id, uid):
     character_data: dict = data.get('Character')
     character_element: str = character_data.get('Element')
     character_name: str = character_data.get('Name')
@@ -548,7 +548,10 @@ def generation(data):
             drew_base.rounded_rectangle((1818, 263, 1862, 288), 1, 'black')
             drew_base.text((1831, 265), str(q), font=config_font(19))
 
-    base_image.save(f'{cwd}/Tests/Image.png')
+    if g_id == 651778808508317707:
+        drew_base.text((1730, 545), 'Genshin Japan', font=config_font(19))
+
+    base_image.save(f'{cwd}/Tests/{uid}-Image.png')
 
     return pil_to_base64(base_image, format='png')
 

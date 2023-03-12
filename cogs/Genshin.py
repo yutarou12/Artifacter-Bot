@@ -190,7 +190,7 @@ class BaseButton(discord.ui.Button):
             await interaction.response.defer()
             res = self.convert.artifacts_convert(self.uid, self.label)
 
-            generation(res)
+            generation(res, interaction.guild_id, self.uid)
 
             if res["Score"]["total"] >= 220:
                 chara_rank = 'SS'
@@ -206,7 +206,7 @@ class BaseButton(discord.ui.Button):
             for q, n in res['Score']['Bonus']:
                 set_bonus_text += f'**{q}セット** `{n}`\n'
 
-            file = discord.File('./Tests/Image.png', filename='image.png')
+            file = discord.File(f'./Tests/{self.uid}-Image.png', filename='image.png')
 
             embed = discord.Embed(title=f'キャラクター評価: {chara_rank}',
                                   description=f'{self.player["Name"]} | 冒険ランク{self.player["Level"]} | 世界ランク{self.player["worldLevel"]}',

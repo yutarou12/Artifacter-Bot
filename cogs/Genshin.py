@@ -1,6 +1,7 @@
 import requests
 import os
 import json
+import math
 
 from PIL import Image, ImageOps, ImageChops
 
@@ -17,7 +18,9 @@ class Genshin(commands.Cog):
         self.convert = bot.convert
 
     @app_commands.command(name='build')
+    @app_commands.checks.cooldown(1, 60 * 3)
     async def cmd_build(self, interaction: discord.Interaction, uid: int):
+        """UIDからキャラクターカードを生成できます。"""
         await interaction.response.defer()
 
         if not os.path.exists(f'./data/cache/{uid}.json'):
@@ -59,6 +62,15 @@ class Genshin(commands.Cog):
         view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.red, label='終了'))
 
         await interaction.followup.send(embed=first_embed, view=view)
+
+    @cmd_build.error
+    async def cmd_build_error(self, interaction, error):
+        if isinstance(error, app_commands.CommandOnCooldown):
+            return await interaction.response.send_message(f'{math.floor(error.retry_after)} 秒後に使うことが出来ます。\n'
+                                                           f'過負荷防止の為にクールダウンを設けています。',
+                                                           ephemeral=True)
+        else:
+            raise error
 
 
 class FirstSelect(discord.ui.Select):

@@ -16,11 +16,46 @@ class Genshin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.convert = bot.convert
+        with open('./data/uid_list.json', 'r', encoding='utf-8') as d:
+            uid_list = json.load(d)
+        self.uid_list = uid_list
+
+    @app_commands.command(name='uid')
+    async def set_uid(self, interaction: discord.Interaction, uid: int = None):
+        """UIDを登録/解除します。build時にUIDを入れなくて済むようになります。"""
+        if self.uid_list.get(str(interaction.user.id)):
+            embed = discord.Embed(title='UID登録解除画面',
+                                  description=f'登録を解除しますか？')
+        else:
+            if not uid:
+                return await interaction.response.send_message('UIDを入れて下さい', ephemeral=True)
+            check_text = f'ユーザー：{interaction.user.name}\nUID：{uid}'
+            embed = discord.Embed(title='UID登録画面',
+                                  description=f'以下の内容で登録しますか？\n```\n{check_text}\n```')
+
+        view = CheckView()
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+        await view.wait()
+        if view.value is None:
+            return
+        elif view.value:
+            if self.uid_list.get(str(interaction.user.id)):
+                del self.uid_list[str(interaction.user.id)]
+                with open('./data/uid_list.json', 'w') as f:
+                    json.dump(self.uid_list, f, indent=4)
+            else:
+                self.uid_list[str(interaction.user.id)] = uid
+                with open('./data/uid_list.json', 'w') as f:
+                    json.dump(self.uid_list, f, indent=4)
 
     @app_commands.command(name='build')
     @app_commands.checks.cooldown(1, 60 * 3)
-    async def cmd_build(self, interaction: discord.Interaction, uid: int):
+    @app_commands.rename(uid_='uid')
+    async def cmd_build(self, interaction: discord.Interaction, uid_: int = None):
         """UIDからキャラクターカードを生成できます。"""
+        uid = uid_ if uid_ else (self.uid_list.get(str(interaction.user.id)) if self.uid_list.get(str(interaction.user.id)) else None)
+        if not uid:
+            return await interaction.response.send_message('UIDを入れて下さい', ephemeral=True)
         await interaction.response.defer()
 
         if not os.path.exists(f'./data/cache/{uid}.json'):
@@ -183,6 +218,25 @@ class BaseButton(discord.ui.Button):
                                   f'スコア:{res["Score"]["total"]}/{res["Score"]["State"]}換算')
             embed.set_image(url='attachment://image.png')
             await interaction.followup.edit_message(message_id=interaction.message.id, embed=embed, attachments=[file])
+
+
+class CheckView(discord.ui.View):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.timeout = 120
+        self.value = None
+
+    @discord.ui.button(label='OK', style=discord.ButtonStyle.green)
+    async def confirm_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.edit_message(content='完了しました', embed=None, view=None)
+        self.value = True
+        self.stop()
+
+    @discord.ui.button(label='Cancel', style=discord.ButtonStyle.red)
+    async def cancel_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message('キャンセルしました', ephemeral=True)
+        self.value = False
+        self.stop()
 
 
 async def setup(bot):

@@ -548,7 +548,7 @@ def generation(data, g_id, uid):
             drew_base.rounded_rectangle((1818, 263, 1862, 288), 1, 'black')
             drew_base.text((1831, 265), str(q), font=config_font(19))
 
-    if g_id == 651778808508317707:
+    if g_id == 768391131070857267:
         drew_base.text((1730, 545), 'Genshin Japan', font=config_font(19))
 
     base_image.save(f'{cwd}/Tests/{uid}-Image.png')

@@ -42,7 +42,7 @@ def calculate_score(state, artifact: list) -> int:
     elif state == 'チャージ':
         score = 0
         for art in artifact:
-            if art["option"] == ["元素チャージ効率", "会心ダメージ"]:
+            if art["option"] in ["元素チャージ効率", "会心ダメージ"]:
                 score += art["value"]
             elif art["option"] == '会心率':
                 score += (art["value"] * 2)
@@ -52,7 +52,7 @@ def calculate_score(state, artifact: list) -> int:
     elif state == '防御':
         score = 0
         for art in artifact:
-            if art["option"] == ["防御パーセンテージ", "会心ダメージ"]:
+            if art["option"] in ["防御パーセンテージ", "会心ダメージ"]:
                 score += art["value"]
             elif art["option"] == '会心率':
                 score += (art["value"] * 2)

@@ -129,3 +129,6 @@ dmypy.json
 .pyre/
 
 .idea/
+data/uid_list.json
+data/cache/
+Tests/

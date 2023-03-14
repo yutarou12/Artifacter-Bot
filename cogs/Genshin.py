@@ -2,7 +2,9 @@ import requests
 import os
 import json
 import math
+import aiohttp
 
+from io import BytesIO
 from PIL import Image, ImageOps, ImageChops
 
 import discord
@@ -58,15 +60,15 @@ class Genshin(commands.Cog):
             return await interaction.response.send_message('UIDを入れて下さい', ephemeral=True)
         await interaction.response.defer()
 
-        if not os.path.exists(f'./data/cache/{uid}.json'):
-            res = requests.get(f'https://enka.network/api/uid/{uid}')
-            res_data = res.json()
-            with open(f'./data/cache/{uid}.json', 'w') as f:
-                json.dump(res_data, f, indent=4)
+        async with aiohttp.ClientSession() as session:
+            async with session.post('http://127.0.0.1:8000/api/player', json={"uid": int(uid_)}) as r:
+                if r.status == 200:
+                    j = await r.json()
+                    player = j.get("Player")
+                    all_data = j.get("AllData")
+                else:
+                    return await interaction.followup.send(content='取得できませんでした')
 
-        player = self.convert.player_info(uid)
-        if not player:
-            return await interaction.followup.send(content='取得できませんでした')
         first_embed = discord.Embed(title=player["Name"])
         if player["Signature"]:
             first_embed.description = player["Signature"]
@@ -77,32 +79,35 @@ class Genshin(commands.Cog):
         if player["NameCard"]:
             first_embed.set_image(url=f'https://enka.network/ui/{player["NameCard"]}.png')
 
-        view = discord.ui.View(timeout=180)
+        view = BuildView()
         if player["showAvatarInfo"]:
-            view_select = FirstSelect(self.bot, uid, player, user=interaction.user)
+            view_select = FirstSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
             for i, chara in enumerate(player["showAvatarInfo"]):
                 name = self.convert.fetch_character(str(chara["avatarId"]))
                 level = chara["level"]
                 view_select.add_option(label=name, description=f'Lv{level}', value=f'{i}')
         else:
-            view_select = FirstSelect(self.bot, uid, player, user=interaction.user)
+            view_select = FirstSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
             view_select.add_option(label='取得できません')
 
         view.add_item(view_select)
-        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='攻撃',
+        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='攻撃',
                                  user=interaction.user))
-        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='HP',
+        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='HP',
                                  user=interaction.user))
-        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='チャージ',
+        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='チャージ',
                                  user=interaction.user))
-        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='元素熟知',
+        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='元素熟知',
                                  user=interaction.user))
-        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.green, label='防御',
+        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='防御',
                                  user=interaction.user))
-        view.add_item(BaseButton(bot=self.bot, uid=uid, player=player, style=discord.ButtonStyle.red, label='終了',
+        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.red, label='終了',
                                  user=interaction.user))
 
         await interaction.followup.send(embed=first_embed, view=view)
+        view_re = await view.wait()
+        if view_re:
+            requests.get(f'http://127.0.0.1:8000/api/delete/{uid}')
 
     @cmd_build.error
     async def cmd_build_error(self, interaction, error):
@@ -115,21 +120,29 @@ class Genshin(commands.Cog):
 
 
 class FirstSelect(discord.ui.Select):
-    def __init__(self, bot, uid, player, user):
-        self.bot = bot
+    def __init__(self, res_data, uid, player, user):
+        self.res_data = res_data
         self.uid = uid
         self.player = player
         self.user = user
-        self.convert = self.bot.convert
         super().__init__()
         self.placeholder = "キャラクターを選択"
 
     async def callback(self, interaction: discord.Interaction):
         if not interaction.user == self.user:
             return
-        self.convert.info_convert(self.uid, int(self.values[0]))
-        with open(f'./data/cache/{self.uid}-character.json', mode='r', encoding='utf-8') as f:
-            res = json.load(f)
+
+        async with aiohttp.ClientSession() as session:
+            data = {
+                "data": self.res_data,
+                "index": int(self.values[0]),
+                "uid": int(self.uid)
+            }
+            async with session.post('http://127.0.0.1:8000/api/converter', json=data) as r:
+                if r.status == 200:
+                    res = await r.json()
+                else:
+                    return await interaction.followup.send(content='取得できませんでした')
 
         character = res["Character"]
         weapon = res["Weapon"]
@@ -163,12 +176,11 @@ class FirstSelect(discord.ui.Select):
 
 
 class BaseButton(discord.ui.Button):
-    def __init__(self, bot, uid, player, user, *args, **kwargs):
+    def __init__(self, uid, player, user, *args, **kwargs):
         self.chara_data = None
         self.player = player
         self.uid = uid
         self.user = user
-        self.convert = bot.convert
         super().__init__(*args, **kwargs)
 
     async def callback(self, interaction: discord.Interaction):
@@ -176,21 +188,35 @@ class BaseButton(discord.ui.Button):
             return
         if self.label == '終了':
             self.view.stop()
-            if os.path.exists(f'./data/cache/{self.uid}-character.json'):
-                os.remove(f'./data/cache/{self.uid}-character.json')
-            if os.path.exists(f'./data/cache/{self.uid}.json'):
-                os.remove(f'./data/cache/{self.uid}.json')
-            if os.path.exists(f'./data/cache/{self.uid}-fixed.json'):
-                os.remove(f'./data/cache/{self.uid}-fixed.json')
+            requests.get(f'http://127.0.0.1:8000/api/delete/{self.uid}')
             return await interaction.response.edit_message(view=None)
-
-        elif not os.path.exists(f'./data/cache/{self.uid}-character.json'):
-            await interaction.response.send_message('先にキャラクターを選択してください。', ephemeral=True)
         else:
-            await interaction.response.defer()
-            res = self.convert.artifacts_convert(self.uid, self.label)
+            async with aiohttp.ClientSession() as session:
+                data = {
+                    "types": self.label,
+                    "uid": int(self.uid)
+                }
+                async with session.post('http://127.0.0.1:8000/api/artifacts', json=data) as r:
+                    if r.status == 200:
+                        res = await r.json()
+                    else:
+                        return await interaction.response.send_message('先にキャラクターを選択してください。', ephemeral=True)
 
-            generation(res, interaction.guild_id, self.uid)
+            await interaction.response.defer()
+
+            async with aiohttp.ClientSession() as session:
+                data = {
+                    "data": res,
+                    "guild_id": interaction.guild_id,
+                    "uid": int(self.uid),
+                }
+                async with session.post('http://127.0.0.1:8000/api/generation', json=data) as r:
+                    if r.status == 200:
+                        image_data = await r.content.read()
+                        img = Image.open(BytesIO(image_data))
+                        img.save(f'./Tests/{self.uid}-Image.png')
+                    else:
+                        return await interaction.followup.send('生成できませんでした。', ephemeral=True)
 
             if res["Score"]["total"] >= 220:
                 chara_rank = 'SS'
@@ -218,6 +244,13 @@ class BaseButton(discord.ui.Button):
                                   f'スコア:{res["Score"]["total"]}/{res["Score"]["State"]}換算')
             embed.set_image(url='attachment://image.png')
             await interaction.followup.edit_message(message_id=interaction.message.id, embed=embed, attachments=[file])
+
+
+class BuildView(discord.ui.View):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.timeout = 90
+        self.value = None
 
 
 class CheckView(discord.ui.View):

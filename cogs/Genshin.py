@@ -1,17 +1,14 @@
 import requests
-import os
 import json
 import math
 import aiohttp
 
 from io import BytesIO
-from PIL import Image, ImageOps, ImageChops
+from PIL import Image
 
 import discord
 from discord import app_commands
 from discord.ext import commands
-
-from Generater import generation
 
 
 class Genshin(commands.Cog):
@@ -55,13 +52,13 @@ class Genshin(commands.Cog):
     @app_commands.rename(uid_='uid')
     async def cmd_build(self, interaction: discord.Interaction, uid_: int = None):
         """UIDからキャラクターカードを生成できます。"""
-        uid = uid_ if uid_ else (self.uid_list.get(str(interaction.user.id)) if self.uid_list.get(str(interaction.user.id)) else None)
+        uid = uid_ or self.uid_list.get(str(interaction.user.id))
         if not uid:
             return await interaction.response.send_message('UIDを入れて下さい', ephemeral=True)
         await interaction.response.defer()
 
         async with aiohttp.ClientSession() as session:
-            async with session.post('http://127.0.0.1:8000/api/player', json={"uid": int(uid_)}) as r:
+            async with session.post('http://127.0.0.1:8080/api/player', json={"uid": int(uid_)}) as r:
                 if r.status == 200:
                     j = await r.json()
                     player = j.get("Player")
@@ -107,7 +104,7 @@ class Genshin(commands.Cog):
         await interaction.followup.send(embed=first_embed, view=view)
         view_re = await view.wait()
         if view_re:
-            requests.get(f'http://127.0.0.1:8000/api/delete/{uid}')
+            requests.get(f'http://127.0.0.1:8080/api/delete/{uid}')
 
     @cmd_build.error
     async def cmd_build_error(self, interaction, error):
@@ -138,7 +135,7 @@ class FirstSelect(discord.ui.Select):
                 "index": int(self.values[0]),
                 "uid": int(self.uid)
             }
-            async with session.post('http://127.0.0.1:8000/api/converter', json=data) as r:
+            async with session.post('http://127.0.0.1:8080/api/converter', json=data) as r:
                 if r.status == 200:
                     res = await r.json()
                 else:
@@ -188,7 +185,7 @@ class BaseButton(discord.ui.Button):
             return
         if self.label == '終了':
             self.view.stop()
-            requests.get(f'http://127.0.0.1:8000/api/delete/{self.uid}')
+            requests.get(f'http://127.0.0.1:8080/api/delete/{self.uid}')
             return await interaction.response.edit_message(view=None)
         else:
             async with aiohttp.ClientSession() as session:
@@ -196,7 +193,7 @@ class BaseButton(discord.ui.Button):
                     "types": self.label,
                     "uid": int(self.uid)
                 }
-                async with session.post('http://127.0.0.1:8000/api/artifacts', json=data) as r:
+                async with session.post('http://127.0.0.1:8080/api/artifacts', json=data) as r:
                     if r.status == 200:
                         res = await r.json()
                     else:
@@ -210,7 +207,7 @@ class BaseButton(discord.ui.Button):
                     "guild_id": interaction.guild_id,
                     "uid": int(self.uid),
                 }
-                async with session.post('http://127.0.0.1:8000/api/generation', json=data) as r:
+                async with session.post('http://127.0.0.1:8080/api/generation', json=data) as r:
                     if r.status == 200:
                         image_data = await r.content.read()
                         img = Image.open(BytesIO(image_data))

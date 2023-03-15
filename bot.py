@@ -4,7 +4,6 @@ import discord
 from discord.ext import commands
 
 from dotenv import load_dotenv
-import libs.Convert as Convert
 
 load_dotenv()
 
@@ -36,7 +35,7 @@ intents.members = True
 intents.message_content = True
 
 bot = MyBot(
-    command_prefix=commands.when_mentioned_or('ai.'),
+    command_prefix=commands.when_mentioned_or('test.'),
     intents=intents,
     allowed_mentions=discord.AllowedMentions(replied_user=False, everyone=False),
     help_command=None
@@ -53,5 +52,4 @@ async def on_ready():
 
 
 if __name__ == '__main__':
-    bot.convert = Convert
     bot.run(os.getenv('DISCORD_BOT_TOKEN'))

@@ -52,13 +52,15 @@ class Genshin(commands.Cog):
     @app_commands.rename(uid_='uid')
     async def cmd_build(self, interaction: discord.Interaction, uid_: int = None):
         """UIDからキャラクターカードを生成できます。"""
+
+        uid = uid_ or self.uid_list.get(str(interaction.user.id))
+        if not uid:
+            return await interaction.response.send_message('UIDを入れて下さい', ephemeral=True)
+
         await interaction.response.defer()
 
         async with aiohttp.ClientSession() as session:
-            uid = uid_ or self.uid_list.get(str(interaction.user.id))
-            if not uid:
-                return await interaction.followup.send('UIDを入れて下さい', ephemeral=True)
-            async with session.post('http://127.0.0.1:8080/api/player', json={"uid": int(uid_)}) as r:
+            async with session.post('http://127.0.0.1:8080/api/player', json={"uid": uid}) as r:
                 if r.status == 200:
                     j = await r.json()
                     player = j.get("Player")

@@ -35,7 +35,7 @@ intents.members = True
 intents.message_content = True
 
 bot = MyBot(
-    command_prefix=commands.when_mentioned_or('test.'),
+    command_prefix=commands.when_mentioned_or('a.'),
     intents=intents,
     allowed_mentions=discord.AllowedMentions(replied_user=False, everyone=False),
     help_command=None

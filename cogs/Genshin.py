@@ -139,7 +139,7 @@ class FirstSelect(discord.ui.Select):
                 if r.status == 200:
                     res = await r.json()
                 else:
-                    return await interaction.followup.send(content='取得できませんでした')
+                    return await interaction.response.send_message(content='取得できませんでした', ephemeral=True)
 
         character = res["Character"]
         weapon = res["Weapon"]

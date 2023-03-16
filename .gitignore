@@ -130,4 +130,5 @@ dmypy.json
 
 .idea/
 data/uid_list.json
+data/cache/
 Tests/

@@ -10,11 +10,12 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from libs.Convert import fetch_character
+
 
 class Genshin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.convert = bot.convert
         with open('./data/uid_list.json', 'r', encoding='utf-8') as d:
             uid_list = json.load(d)
         self.uid_list = uid_list
@@ -82,7 +83,7 @@ class Genshin(commands.Cog):
         if player["showAvatarInfo"]:
             view_select = FirstSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
             for i, chara in enumerate(player["showAvatarInfo"]):
-                name = self.convert.fetch_character(str(chara["avatarId"]))
+                name = fetch_character(str(chara["avatarId"]))
                 level = chara["level"]
                 view_select.add_option(label=name, description=f'Lv{level}', value=f'{i}')
         else:
@@ -148,9 +149,15 @@ class FirstSelect(discord.ui.Select):
         set_bonus_text = ''
         for q, n in res['Score']['Bonus']:
             set_bonus_text += f'**{q}セット** `{n}`\n'
-        status_text = ''
+        status_text = list()
+        raw_list = list()
         for k, v in character['Status'].items():
-            status_text += f'**{k}**：{v}\n'
+            if k not in ['HP', '攻撃力', '防御力']:
+                status_text.append(f'**{k}**：{v}')
+            else:
+                raw_list.insert(0, f'**{k}**：{v}')
+        for r in raw_list:
+            status_text.insert(0, r)
 
         embed = discord.Embed(description=f'{self.player["Name"]}・冒険ランク{self.player["Level"]}・世界ランク{self.player["worldLevel"]}',
                               color=discord.Color.from_str(character["Color"]))
@@ -165,7 +172,7 @@ class FirstSelect(discord.ui.Select):
                             value=value_text,
                             inline=False)
 
-        embed.add_field(name='ステータス', value=status_text, inline=False)
+        embed.add_field(name='ステータス', value='\n'.join(status_text), inline=False)
         character_talent_list = [str(t) for t in list(character["Talent"].values())]
 
         embed.add_field(name='天賦レベル', value='/'.join(character_talent_list), inline=False)

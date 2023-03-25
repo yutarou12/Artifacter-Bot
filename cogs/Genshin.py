@@ -91,17 +91,17 @@ class Genshin(commands.Cog):
             view_select.add_option(label='取得できません')
 
         view.add_item(view_select)
-        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='攻撃',
+        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ攻撃ㅤ',
                                  user=interaction.user))
-        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='HP',
+        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤHPㅤ',
                                  user=interaction.user))
-        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='チャージ',
+        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤチャージㅤ',
                                  user=interaction.user))
-        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='元素熟知',
+        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ元素熟知ㅤ',
                                  user=interaction.user, row=2))
-        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='防御',
+        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ防御ㅤ',
                                  user=interaction.user, row=2))
-        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.red, label='終了',
+        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.red, label='ㅤ終了ㅤ',
                                  user=interaction.user, row=2))
 
         await interaction.followup.send(embed=first_embed, view=view)

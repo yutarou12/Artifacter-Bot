@@ -98,11 +98,11 @@ class Genshin(commands.Cog):
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='チャージ',
                                  user=interaction.user))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='元素熟知',
-                                 user=interaction.user))
+                                 user=interaction.user, row=2))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='防御',
-                                 user=interaction.user))
+                                 user=interaction.user, row=2))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.red, label='終了',
-                                 user=interaction.user))
+                                 user=interaction.user, row=2))
 
         await interaction.followup.send(embed=first_embed, view=view)
         view_re = await view.wait()

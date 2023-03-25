@@ -92,17 +92,17 @@ class Genshin(commands.Cog):
 
         view.add_item(view_select)
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ攻撃ㅤ',
-                                 user=interaction.user))
+                                 user=interaction.user, custom_id='攻撃'))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤHPㅤ',
-                                 user=interaction.user))
+                                 user=interaction.user, custom_id='HP'))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤチャージㅤ',
-                                 user=interaction.user))
+                                 user=interaction.user, custom_id='チャージ'))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ元素熟知ㅤ',
-                                 user=interaction.user, row=2))
+                                 user=interaction.user, row=2, custom_id='元素熟知'))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ防御ㅤ',
-                                 user=interaction.user, row=2))
+                                 user=interaction.user, row=2, custom_id='防御'))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.red, label='ㅤ終了ㅤ',
-                                 user=interaction.user, row=2))
+                                 user=interaction.user, row=2, custom_id='終了'))
 
         await interaction.followup.send(embed=first_embed, view=view)
         view_re = await view.wait()
@@ -192,14 +192,14 @@ class BaseButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         if not interaction.user == self.user:
             return
-        if self.label == '終了':
+        if self.custom_id == '終了':
             self.view.stop()
             requests.get(f'http://127.0.0.1:8080/api/delete/{self.uid}')
             return await interaction.response.edit_message(view=None)
         else:
             async with aiohttp.ClientSession() as session:
                 data = {
-                    "types": self.label,
+                    "types": self.custom_id,
                     "uid": int(self.uid)
                 }
                 async with session.post('http://127.0.0.1:8080/api/artifacts', json=data) as r:

@@ -104,10 +104,11 @@ class Genshin(commands.Cog):
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.red, label='ㅤ終了ㅤ',
                                  user=interaction.user, row=2, custom_id='終了'))
 
-        await interaction.followup.send(embed=first_embed, view=view)
+        msg = await interaction.followup.send(embed=first_embed, view=view)
         view_re = await view.wait()
         if view_re:
             requests.get(f'http://127.0.0.1:8080/api/delete/{uid}')
+            return await msg.edit(view=None)
 
     @cmd_build.error
     async def cmd_build_error(self, interaction, error):
@@ -255,7 +256,7 @@ class BaseButton(discord.ui.Button):
 class BuildView(discord.ui.View):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.timeout = 90
+        self.timeout = 180
         self.value = None
 
 

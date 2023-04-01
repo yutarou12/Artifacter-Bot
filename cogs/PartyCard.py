@@ -1,6 +1,4 @@
-import requests
 import json
-import math
 import aiohttp
 
 from io import BytesIO
@@ -48,8 +46,9 @@ class PartyCard(commands.Cog):
         if player["NameCard"]:
             first_embed.set_image(url=f'https://enka.network/ui/{player["NameCard"]}.png')
 
-        view = MainCharacterView()
-        character_select = MainCharacterSelect(data={"AllData": all_data, "Player": player})
+        view = MainCharacterView(user=interaction.user)
+        character_select = MainCharacterSelect(
+            data={"AllData": all_data, "Player": player}, uid=uid, user=interaction.user)
 
         view.add_item(discord.ui.Button(style=discord.ButtonStyle.url, url='https://enka.network', label='Enka Network'))
 
@@ -66,25 +65,32 @@ class PartyCard(commands.Cog):
 
 
 class MainCharacterView(discord.ui.View):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.timeout = 120
         self.value = None
+        self.user = user
 
     @discord.ui.button(label='生成をキャンセル', style=discord.ButtonStyle.red)
     async def cancel_button(self, interaction: discord.Interaction, button):
+        if not interaction.user == self.user:
+            return
         self.stop()
         self.value = True
         return await interaction.response.edit_message(view=None)
 
 
 class MainCharacterSelect(discord.ui.Select):
-    def __init__(self, data: dict, *args, **kwargs):
+    def __init__(self, data: dict, uid: int, user, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.placeholder = "メインキャラクターを選択"
         self.data = data
+        self.uid = uid
+        self.user = user
 
     async def callback(self, interaction: discord.Interaction):
+        if not interaction.user == self.user:
+            return
         player = self.data.get('Player')
         main_character = int(self.values[0])
         if main_character == 404:
@@ -97,7 +103,7 @@ class MainCharacterSelect(discord.ui.Select):
         first_embed.set_footer(text='原神パーティー編成画像生成')
 
         view = discord.ui.View()
-        step_first = StepFirstSelect(data=self.data, main_chara=main_character)
+        step_first = StepFirstSelect(data=self.data, main_chara=main_character, uid=self.uid, user=interaction.user)
         for t in ['HP', '攻撃', '防御', 'チャージ', '元素熟知', 'キャンセル']:
             if t == 'キャンセル':
                 step_first.add_option(label=t, description='画像の生成をキャンセルします')
@@ -109,14 +115,18 @@ class MainCharacterSelect(discord.ui.Select):
 
 
 class StepFirstSelect(discord.ui.Select):
-    def __init__(self, data: dict, main_chara: int):
+    def __init__(self, data: dict, main_chara: int, uid: int, user):
         super().__init__()
         self.placeholder = "スコア基準を選択"
         self.data = data
         self.main_character = main_chara
+        self.uid = uid
+        self.user = user
 
     async def callback(self, interaction: discord.Interaction):
-        print(self.values)
+        if not interaction.user == self.user:
+            return
+
         if self.values[0] == 'キャンセル':
             self.view.stop()
             return await interaction.response.edit_message(view=None)
@@ -132,7 +142,8 @@ class StepFirstSelect(discord.ui.Select):
             embed.set_footer(text='原神パーティー編成画像生成')
 
             view = discord.ui.View()
-            select = StepSecondSelect(state=state, data=self.data, main_chara=self.main_character)
+            select = StepSecondSelect(
+                state=state, data=self.data, main_chara=self.main_character, uid=self.uid, user=interaction.user)
 
             if player["showAvatarInfo"]:
                 for i, chara in enumerate(player["showAvatarInfo"]):
@@ -148,7 +159,7 @@ class StepFirstSelect(discord.ui.Select):
 
 
 class StepSecondSelect(discord.ui.Select):
-    def __init__(self, state: str, data: dict, main_chara: int):
+    def __init__(self, state: str, data: dict, main_chara: int, uid: int, user):
         super().__init__()
         self.placeholder = "キャラクターを選択"
         self.max_values = 3
@@ -156,9 +167,62 @@ class StepSecondSelect(discord.ui.Select):
         self.state = state
         self.data = data
         self.main_character = main_chara
+        self.uid = uid
+        self.user = user
 
     async def callback(self, interaction: discord.Interaction):
-        return
+        if not interaction.user == self.user:
+            return
+        await interaction.response.defer()
+
+        embed = discord.Embed(title='Step3：生成中',
+                              description='しばらくお待ちください。')
+        await interaction.followup.edit_message(message_id=interaction.message.id, embed=embed)
+
+        chara_list = list()
+        async with aiohttp.ClientSession() as session:
+            data = {
+                "data": self.data.get('AllData'),
+                "index": self.main_character,
+                "types": self.state
+            }
+            async with session.post('http://127.0.0.1:8080/api/team/main/converter', json=data) as r:
+                if r.status == 200:
+                    chara_list.append(await r.json())
+
+        for sub_chara in self.values:
+            async with aiohttp.ClientSession() as session:
+                data = {
+                    "data": self.data.get('AllData'),
+                    "index": int(sub_chara)
+                }
+                async with session.post('http://127.0.0.1:8080/api/team/sub/converter', json=data) as r:
+                    if r.status == 200:
+                        chara_list.append(await r.json())
+
+        if not len(chara_list) == 4:
+            embed = discord.Embed(title='PT画像生成エラー', description='キャラクターを取得できませんでした。')
+            return await interaction.followup.edit_message(message_id=interaction.message.id, embed=embed)
+        else:
+            async with aiohttp.ClientSession() as session:
+                data = {
+                    "data": chara_list
+                }
+                async with session.post('http://127.0.0.1:8080/api/team/generation', json=data) as r:
+                    if r.status == 200:
+                        image_data = await r.content.read()
+                        img = Image.open(BytesIO(image_data))
+                        img.save(f'./Tests/{str(self.uid)}-TeamImage.png')
+                    else:
+                        return await interaction.followup.edit_message(
+                            message_id=interaction.message.id, content='生成できませんでした。')
+
+            file = discord.File(f'./Tests/{self.uid}-TeamImage.png', filename='image.png')
+
+            embed = discord.Embed(title='パーティー編成カード')
+            embed.set_image(url='attachment://image.png')
+            return await interaction.followup.edit_message(
+                message_id=interaction.message.id, embed=embed, attachments=[file], view=None)
 
 
 async def setup(bot):

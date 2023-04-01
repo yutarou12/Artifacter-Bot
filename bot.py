@@ -30,9 +30,6 @@ class MyBot(commands.Bot):
 
 
 intents = discord.Intents.default()
-intents.guilds = True
-intents.members = True
-intents.message_content = True
 
 bot = MyBot(
     command_prefix=commands.when_mentioned_or('a.'),

@@ -1,7 +1,9 @@
+import os
 import requests
 import json
 import math
 import aiohttp
+import shutil
 
 from io import BytesIO
 from PIL import Image
@@ -184,7 +186,6 @@ class FirstSelect(discord.ui.Select):
 
 class BaseButton(discord.ui.Button):
     def __init__(self, uid, player, user, *args, **kwargs):
-        self.chara_data = None
         self.player = player
         self.uid = uid
         self.user = user
@@ -250,7 +251,56 @@ class BaseButton(discord.ui.Button):
             embed.set_footer(text=f'Lv.{character["Level"]} ・ 好感度{character["Love"]} ・ '
                                   f'スコア:{res["Score"]["total"]}/{res["Score"]["State"]}換算')
             embed.set_image(url='attachment://image.png')
-            await interaction.followup.edit_message(message_id=interaction.message.id, embed=embed, attachments=[file])
+
+            if not len(self.view.children) == 8:
+                end_button = self.view.children[-1]
+                self.view.remove_item(self.view.children[-1])
+                self.view.add_item(ComparisonButton(user=interaction.user, data=res, uid=self.uid,
+                                                style=discord.ButtonStyle.blurple, label='ㅤ比較ㅤ', row=2, custom_id='比較'))
+                self.view.add_item(end_button)
+
+            await interaction.followup.edit_message(message_id=interaction.message.id, embed=embed, attachments=[file], view=self.view)
+
+
+class ComparisonButton(discord.ui.Button):
+    def __init__(self, user, uid, data, *args, **kwargs):
+        self.user = user
+        self.uid = uid
+        self.data = data
+        super().__init__(*args, **kwargs)
+
+    async def callback(self, interaction: discord.Interaction):
+        if not interaction.user == self.user:
+            return
+
+        image_path = f'./Comparison/{self.uid}-{self.data["Character"]["Name"]}-{self.data["Score"]["State"]}.png'
+
+        if not os.path.exists(image_path):
+            embed = discord.Embed(title='次のキャラクターのビルド画像を、次回以降の比較用に保存しますか？',
+                                  description=f'```\n・キャラ：{self.data["Character"]["Name"]}\n・基準：{self.data["Score"]["State"]}\n```')
+            view = CheckView()
+            await interaction.response.send_message(embed=embed, ephemeral=True, view=view)
+            await view.wait()
+
+            if view.value is None:
+                return
+            elif view.value:
+                shutil.copyfile(f'./Tests/{self.uid}-Image.png', image_path)
+
+        else:
+            files = [discord.File(f'./Tests/{self.uid}-Image.png', filename='image_1.png'), discord.File(image_path, filename='image_2.png')]
+            embeds = [discord.Embed(url='https://syutarou.xyz').set_image(url='attachment://image_1.png'),
+                      discord.Embed(url='https://syutarou.xyz').set_image(url='attachment://image_2.png')]
+            view = ComparisonView()
+            await interaction.response.send_message(embeds=embeds, ephemeral=True, view=view, files=files)
+            await view.wait()
+
+            if view.value is None:
+                return
+            elif view.value:
+                shutil.copyfile(f'./Tests/{self.uid}-Image.png', image_path)
+            else:
+                os.remove(image_path)
 
 
 class BuildView(discord.ui.View):
@@ -274,7 +324,26 @@ class CheckView(discord.ui.View):
 
     @discord.ui.button(label='Cancel', style=discord.ButtonStyle.red)
     async def cancel_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message('キャンセルしました', ephemeral=True)
+        await interaction.response.edit_message(content='キャンセルしました', embed=None, view=None)
+        self.value = False
+        self.stop()
+
+
+class ComparisonView(discord.ui.View):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.timeout = 120
+        self.value = None
+
+    @discord.ui.button(label='保存', style=discord.ButtonStyle.green)
+    async def image_save_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.edit_message(content='新しいビルド画像に更新しました。', embed=None, view=None, attachments=[])
+        self.value = True
+        self.stop()
+
+    @discord.ui.button(label='削除', style=discord.ButtonStyle.red)
+    async def image_del_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.edit_message(content='保存されていた画像を削除しました。', embed=None, view=None, attachments=[])
         self.value = False
         self.stop()
 

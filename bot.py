@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 
 from dotenv import load_dotenv
+from cogs.Log import Log
 
 load_dotenv()
 
@@ -13,6 +14,7 @@ extensions_list = [f[:-3] for f in os.listdir("./cogs") if f.endswith(".py")]
 class MyBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.tree.on_error = Log.on_app_command_error
 
     async def setup_hook(self):
         try:
@@ -37,15 +39,6 @@ bot = MyBot(
     allowed_mentions=discord.AllowedMentions(replied_user=False, everyone=False),
     help_command=None
 )
-
-
-@bot.event
-async def on_ready():
-    print(f'{bot.user.name} でログインしました')
-    print(f'サーバー数: {len(bot.guilds)}')
-    await bot.change_presence(
-        activity=discord.Game(name='原神！！！！！！！！！')
-    )
 
 
 if __name__ == '__main__':

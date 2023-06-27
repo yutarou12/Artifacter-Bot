@@ -1,4 +1,6 @@
 import json
+from typing import Optional
+from discord import Asset
 
 
 def load_json(fp_) -> dict:
@@ -15,3 +17,10 @@ def fetch_character(avatar_id: str) -> str:
     if not character_hash:
         return '名前取得不可'
     return ja_name_list.get(str(character_hash))
+
+
+def icon_convert(icon: Optional[Asset]) -> str:
+    if not icon:
+        return 'https://cdn.discordapp.com/embed/avatars/0.png'
+    else:
+        return icon.replace(format='png').url

@@ -5,12 +5,20 @@ import aiohttp
 
 from io import BytesIO
 from PIL import Image
+from typing import Optional
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
 from libs.Convert import fetch_character
+
+
+def cooldown_for_everyone_but_guild(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
+    guild_list = [881390536504799234, 768391131070857267]
+    if interaction.guild.id in guild_list:
+        return None
+    return app_commands.Cooldown(1, 60 * 3)
 
 
 class Genshin(commands.Cog):
@@ -49,7 +57,7 @@ class Genshin(commands.Cog):
                     json.dump(self.uid_list, f, indent=4)
 
     @app_commands.command(name='build')
-    @app_commands.checks.cooldown(1, 60 * 3)
+    @app_commands.checks.dynamic_cooldown(cooldown_for_everyone_but_guild, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.rename(uid_='uid')
     async def cmd_build(self, interaction: discord.Interaction, uid_: int = None):
         """UIDからキャラクターカードを生成できます。"""

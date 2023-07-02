@@ -1,3 +1,4 @@
+import os
 import requests
 import json
 import math
@@ -73,7 +74,7 @@ class Genshin(commands.Cog):
         await interaction.response.defer()
 
         async with aiohttp.ClientSession() as session:
-            async with session.post('http://127.0.0.1:8080/api/player', json={"uid": uid}) as r:
+            async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/player', json={"uid": uid}) as r:
                 if r.status == 200:
                     j = await r.json()
                     player = j.get("Player")
@@ -119,7 +120,7 @@ class Genshin(commands.Cog):
         msg = await interaction.followup.send(embed=first_embed, view=view)
         view_re = await view.wait()
         if view_re:
-            requests.get(f'http://127.0.0.1:8080/api/delete/{uid}')
+            requests.get(f'http://{os.getenv("API_HOST_NAME")}:8080/api/delete/{uid}')
             return await msg.edit(view=None)
 
     @cmd_build.error
@@ -151,7 +152,7 @@ class FirstSelect(discord.ui.Select):
                 "index": int(self.values[0]),
                 "uid": int(self.uid)
             }
-            async with session.post('http://127.0.0.1:8080/api/converter', json=data) as r:
+            async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/converter', json=data) as r:
                 if r.status == 200:
                     res = await r.json()
                 else:
@@ -207,7 +208,7 @@ class BaseButton(discord.ui.Button):
             return
         if self.custom_id == '終了':
             self.view.stop()
-            requests.get(f'http://127.0.0.1:8080/api/delete/{self.uid}')
+            requests.get(f'http://{os.getenv("API_HOST_NAME")}:8080/api/delete/{self.uid}')
             return await interaction.response.edit_message(view=None)
         else:
             async with aiohttp.ClientSession() as session:
@@ -215,7 +216,7 @@ class BaseButton(discord.ui.Button):
                     "types": self.custom_id,
                     "uid": int(self.uid)
                 }
-                async with session.post('http://127.0.0.1:8080/api/artifacts', json=data) as r:
+                async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/artifacts', json=data) as r:
                     if r.status == 200:
                         res = await r.json()
                     else:
@@ -229,7 +230,7 @@ class BaseButton(discord.ui.Button):
                     "guild_id": interaction.guild_id,
                     "uid": int(self.uid),
                 }
-                async with session.post('http://127.0.0.1:8080/api/generation', json=data) as r:
+                async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/generation', json=data) as r:
                     if r.status == 200:
                         image_data = await r.content.read()
                         img = Image.open(BytesIO(image_data))

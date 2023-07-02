@@ -73,20 +73,20 @@ class ProductionDatabase:
     @check_connection
     def get_premium_guid_list(self):
         with self.connection.cursor() as cursor:
-            cursor.excute('SELECT guild_id FROM `premium_guild`')
+            cursor.excute("SELECT guild_id FROM premium_guild")
             result = cursor.fetchall()
         return result
 
     @check_connection
     def add_premium_guid(self, guild_id: int):
         with self.connection.cursor() as cursor:
-            cursor.excute("INSERT INTO `premium_guild` (`guild_id`)  VALUES (%s)", (guild_id,))
+            cursor.excute("INSERT INTO premium_guild (guild_id)  VALUES (%s)", (guild_id,))
         self.connection.commit()
 
     @check_connection
     def remove_premium_guid(self, guild_id: int):
         with self.connection.cursor() as cursor:
-            cursor.excute("DELETE FROM `premium_guild` WHERE `guild_id`=%s", (guild_id, ))
+            cursor.excute("DELETE FROM premium_guild WHERE guild_id=%s", (guild_id, ))
         self.connection.commit()
 
 

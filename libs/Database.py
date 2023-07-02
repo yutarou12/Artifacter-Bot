@@ -15,6 +15,7 @@ class ProductionDatabase:
                                           user=os.getenv('MYSQL_USER'),
                                           password=os.getenv('MYSQL_PASSWORD'),
                                           database=os.getenv('MYSQL_DATABASE_NAME'),
+                                          port=3310,
                                           cursorclass=pymysql.cursors.DictCursor)
 
         with self.connection.cursor() as cursor:

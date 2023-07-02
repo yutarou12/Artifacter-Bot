@@ -12,9 +12,13 @@ from discord import app_commands
 from discord.ext import commands
 
 from libs.Convert import fetch_character
+from libs.Database import Database
 
 
 def cooldown_for_everyone_but_guild(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
+    db = Database()
+    guild_list_db = db.get_premium_guid_list()
+    print(guild_list_db)
     guild_list = [881390536504799234, 768391131070857267]
     if interaction.guild.id in guild_list:
         return None

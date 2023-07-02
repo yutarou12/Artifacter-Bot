@@ -36,7 +36,7 @@ class ProductionDatabase:
     @check_connection
     def execute(self, sql):
         with self.connection.cursor() as cursor:
-            await cursor.execute(sql)
+            cursor.execute(sql)
 
     @check_connection
     def fetch(self, sql):

@@ -27,7 +27,6 @@ class ProductionDatabase:
         return self.connection
 
     def check_connection(func):
-        @wraps(func)
         def inner(self, *args, **kwargs):
             self.connection = self.connection or self.setup()
             print(self.connection)

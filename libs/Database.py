@@ -74,6 +74,7 @@ class ProductionDatabase:
     def get_premium_guild_list(self):
         with self.connection.cursor() as cursor:
             print('---------------get--------')
+            print(cursor)
             print(self.connection)
             sql = "SELECT * FROM `premium_guild`"
             cursor.excute(sql)

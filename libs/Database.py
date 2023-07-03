@@ -22,7 +22,6 @@ class ProductionDatabase:
                 "CREATE TABLE IF NOT EXISTS `user_uid` (`user_id` bigint NOT NULL, `uid` char(10) NOT NULL, PRIMARY KEY (`user_id`))")
             cursor.execute(
                 "CREATE TABLE IF NOT EXISTS `premium_guild` (`guild_id` bigint NOT NULL, PRIMARY KEY (`guild_id`))")
-            cursor.close()
         self.connection.commit()
 
         return self.connection
@@ -38,13 +37,11 @@ class ProductionDatabase:
     def execute(self, sql):
         with self.connection.cursor() as cursor:
             cursor.execute(sql)
-            cursor.close()
 
     @check_connection
     def fetch(self, sql):
         with self.connection.cursor() as cursor:
             data = cursor.fetchone(sql)
-            cursor.close()
         return data
 
     @check_connection
@@ -52,7 +49,6 @@ class ProductionDatabase:
         with self.connection.cursor() as cursor:
             cursor.excute('SELECT `uid` FROM `user_uid` WHERE `user_id`=%s', (user_id,))
             result = cursor.fetchone()
-            cursor.close()
         return result
 
     @check_connection
@@ -60,43 +56,35 @@ class ProductionDatabase:
         with self.connection.cursor() as cursor:
             cursor.excute('SELECT `user_id` FROM `user_uid` WHERE `uid`=%s', (uid,))
             result = cursor.fetchone()
-            cursor.close()
         return result
 
     @check_connection
     def add_user_uid(self, user_id: int, uid: str):
         with self.connection.cursor() as cursor:
             cursor.excute("INSERT INTO `user_uid` (`user_id`, `uid`) VALUES (%s, %s)", (user_id, uid))
-            cursor.close()
         self.connection.commit()
 
     @check_connection
     def remove_user_uid(self, user_id: int, uid: str):
         with self.connection.cursor() as cursor:
             cursor.excute("DELETE FROM `user_uid` WHERE `user_id`=%s AND `uid`=%s", (user_id, uid))
-            cursor.close()
         self.connection.commit()
 
-    @check_connection
-    def get_premium_guid_list(self):
+    def get_premium_guild_list(self):
         with self.connection.cursor() as cursor:
-            cursor.excute("SELECT guild_id FROM premium_guild")
-            cursor.close()
+            sql = "SELECT * FROM `premium_guild`"
+            cursor.excute("SELECT guild_id FROM `premium_guild`")
             result = cursor.fetchall()
         return result
 
-    @check_connection
-    def add_premium_guid(self, guild_id: int):
+    def add_premium_guild(self, guild_id: int):
         with self.connection.cursor() as cursor:
             cursor.excute("INSERT INTO premium_guild (guild_id)  VALUES (%s)", (guild_id,))
-            cursor.close()
         self.connection.commit()
 
-    @check_connection
-    def remove_premium_guid(self, guild_id: int):
+    def remove_premium_guild(self, guild_id: int):
         with self.connection.cursor() as cursor:
             cursor.excute("DELETE FROM premium_guild WHERE guild_id=%s", (guild_id, ))
-            cursor.close()
         self.connection.commit()
 
 

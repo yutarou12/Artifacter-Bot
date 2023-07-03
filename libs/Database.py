@@ -30,6 +30,7 @@ class ProductionDatabase:
         @wraps(func)
         def inner(self, *args, **kwargs):
             self.connection = self.connection or self.setup()
+            print(self.connection)
             return func(self, *args, **kwargs)
         return inner
 
@@ -70,18 +71,23 @@ class ProductionDatabase:
             cursor.excute("DELETE FROM `user_uid` WHERE `user_id`=%s AND `uid`=%s", (user_id, uid))
         self.connection.commit()
 
+    @check_connection
     def get_premium_guild_list(self):
         with self.connection.cursor() as cursor:
+            print('---------------get--------')
+            print(self.connection)
             sql = "SELECT * FROM `premium_guild`"
-            cursor.excute("SELECT guild_id FROM `premium_guild`")
+            cursor.excute(sql)
             result = cursor.fetchall()
         return result
 
+    @check_connection
     def add_premium_guild(self, guild_id: int):
         with self.connection.cursor() as cursor:
             cursor.excute("INSERT INTO premium_guild (guild_id)  VALUES (%s)", (guild_id,))
         self.connection.commit()
 
+    @check_connection
     def remove_premium_guild(self, guild_id: int):
         with self.connection.cursor() as cursor:
             cursor.excute("DELETE FROM premium_guild WHERE guild_id=%s", (guild_id, ))

@@ -72,14 +72,15 @@ class ProductionDatabase:
 
     @check_connection
     def get_premium_guild_list(self):
-        with self.connection.cursor() as cursor:
-            print('---------------get--------')
-            print(cursor)
-            print(self.connection)
-            sql = "SELECT * FROM `premium_guild`"
-            cursor.excute(sql)
-            result = cursor.fetchall()
-        return result
+        with self.connection as con:
+            with con.cursor() as cursor:
+                print('---------------get--------')
+                print(cursor)
+                print(self.connection)
+                sql = "SELECT * FROM `premium_guild`"
+                cursor.excute(sql)
+                result = cursor.fetchall()
+            return result
 
     @check_connection
     def add_premium_guild(self, guild_id: int):

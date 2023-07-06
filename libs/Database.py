@@ -13,7 +13,7 @@ class ProductionDatabase:
     async def setup(self):
         self.pool = await asyncpg.create_pool(f"postgresql://{os.getenv('POSTGRESQL_USER')}:{os.getenv('POSTGRESQL_PASSWORD')}@{os.getenv('POSTGRESQL_HOST_NAME')}:{os.getenv('POSTGRESQL_PORT')}/{os.getenv('POSTGRESQL_DATABASE_NAME')}")
 
-        with self.pool.acquire() as conn:
+        async with self.pool.acquire() as conn:
             await conn.execute(
                 "CREATE TABLE IF NOT EXISTS user_uid (user_id bigint NOT NULL PRIMARY KEY, uid char(10) NOT NULL)")
             await conn.execute(

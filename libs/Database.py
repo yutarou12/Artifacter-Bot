@@ -61,7 +61,7 @@ class ProductionDatabase:
     @check_connection
     async def add_user_uid(self, user_id: int, uid: str):
         async with self.pool.acquire() as con:
-            await con.execute("INSERT INTO user_uid (user_id, uid) VALUES ($1, $2)", user_id, uid)
+            await con.execute("INSERT INTO user_uid (user_id, uid) VALUES ($1, $2)", user_id, str(uid))
 
     @check_connection
     async def remove_user_uid(self, user_id: int):

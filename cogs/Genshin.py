@@ -47,7 +47,7 @@ class Genshin(commands.Cog):
             return
         elif view.value:
             if await self.bot.db.get_uid_from_user(interaction.user.id):
-                await self.bot.db.remove_user_uid(interaction.user.id, uid)
+                await self.bot.db.remove_user_uid(interaction.user.id)
             else:
                 await self.bot.db.add_user_uid(interaction.user.id, uid)
 

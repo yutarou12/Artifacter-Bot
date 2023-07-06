@@ -64,9 +64,9 @@ class ProductionDatabase:
             await con.execute("INSERT INTO user_uid (user_id, uid) VALUES ($1, $2)", user_id, uid)
 
     @check_connection
-    async def remove_user_uid(self, user_id: int, uid: str):
+    async def remove_user_uid(self, user_id: int):
         async with self.pool.acquire() as con:
-            await con.execute("DELETE FROM user_uid WHERE user_id=$1 AND uid=$2", user_id, uid)
+            await con.execute("DELETE FROM user_uid WHERE user_id=$1", user_id)
 
     @check_connection
     async def get_premium_guild_list(self):

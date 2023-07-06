@@ -44,15 +44,19 @@ class ProductionDatabase:
     async def get_uid_from_user(self, user_id: int):
         async with self.pool.acquire() as con:
             data = await con.fetch('SELECT uid FROM user_uid WHERE user_id=$1', user_id)
-            result = data
-        return result
+            if data:
+                return data['uid']
+            else:
+                return None
 
     @check_connection
     async def get_user_from_uid(self, uid: str):
         async with self.pool.acquire() as con:
             data = await con.fetch('SELECT user_id FROM user_uid WHERE uid=$1', uid)
-            result = data
-        return result
+            if data:
+                return data['user_id']
+            else:
+                return None
 
     @check_connection
     async def add_user_uid(self, user_id: int, uid: str):
@@ -68,7 +72,7 @@ class ProductionDatabase:
     async def get_premium_guild_list(self):
         async with self.pool.acquire() as con:
             data = await con.fetch("SELECT * FROM premium_guild")
-            result = data
+            result = [value['guild_id'] for value in data]
             return result
 
     @check_connection

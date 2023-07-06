@@ -1,6 +1,5 @@
 import os
 import requests
-import json
 import math
 import aiohttp
 
@@ -16,11 +15,9 @@ from libs.Convert import fetch_character
 from libs.Database import Database
 
 
-def cooldown_for_everyone_but_guild(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
+async def cooldown_for_everyone_but_guild(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
     db = Database()
-    guild_list_db = db.get_premium_guild_list()
-    print(guild_list_db)
-    guild_list = [881390536504799234, 768391131070857267]
+    guild_list = await db.get_premium_guild_list()
     if interaction.guild.id in guild_list:
         return None
     return app_commands.Cooldown(1, 60 * 3)
@@ -29,14 +26,11 @@ def cooldown_for_everyone_but_guild(interaction: discord.Interaction) -> Optiona
 class Genshin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        with open('./data/uid_list.json', 'r', encoding='utf-8') as d:
-            uid_list = json.load(d)
-        self.uid_list = uid_list
 
     @app_commands.command(name='uid')
-    async def set_uid(self, interaction: discord.Interaction, uid: int = None):
+    async def set_uid(self, interaction: discord.Interaction, uid: str = None):
         """UIDを登録/解除します。build時にUIDを入れなくて済むようになります。"""
-        if self.uid_list.get(str(interaction.user.id)):
+        if await self.bot.db.get_uid_from_user(interaction.user.id):
             embed = discord.Embed(title='UID登録解除画面',
                                   description=f'登録を解除しますか？')
         else:
@@ -52,22 +46,18 @@ class Genshin(commands.Cog):
         if view.value is None:
             return
         elif view.value:
-            if self.uid_list.get(str(interaction.user.id)):
-                del self.uid_list[str(interaction.user.id)]
-                with open('./data/uid_list.json', 'w') as f:
-                    json.dump(self.uid_list, f, indent=4)
+            if await self.bot.db.get_uid_from_user(interaction.user.id):
+                await self.bot.db.remove_user_uid(interaction.user.id, uid)
             else:
-                self.uid_list[str(interaction.user.id)] = uid
-                with open('./data/uid_list.json', 'w') as f:
-                    json.dump(self.uid_list, f, indent=4)
+                await self.bot.db.add_user_uid(interaction.user.id, uid)
 
     @app_commands.command(name='build')
     @app_commands.checks.dynamic_cooldown(cooldown_for_everyone_but_guild, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.rename(uid_='uid')
-    async def cmd_build(self, interaction: discord.Interaction, uid_: int = None):
+    async def cmd_build(self, interaction: discord.Interaction, uid_: str = None):
         """UIDからキャラクターカードを生成できます。"""
 
-        uid = uid_ or self.uid_list.get(str(interaction.user.id))
+        uid = uid_ or await self.bot.db.get_uid_from_user(interaction.user.id)
         if not uid:
             return await interaction.response.send_message('UIDを入れて下さい', ephemeral=True)
 

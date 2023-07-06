@@ -45,7 +45,7 @@ class ProductionDatabase:
         async with self.pool.acquire() as con:
             data = await con.fetch('SELECT uid FROM user_uid WHERE user_id=$1', user_id)
             if data:
-                return data['uid']
+                return data[0].get('uid')
             else:
                 return None
 
@@ -54,7 +54,7 @@ class ProductionDatabase:
         async with self.pool.acquire() as con:
             data = await con.fetch('SELECT user_id FROM user_uid WHERE uid=$1', uid)
             if data:
-                return data['user_id']
+                return data[0].get('user_id')
             else:
                 return None
 

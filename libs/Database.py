@@ -43,26 +43,26 @@ class ProductionDatabase:
     @check_connection
     async def get_uid_from_user(self, user_id: int):
         async with self.pool.acquire() as con:
-            data = await con.fetch('SELECT uid FROM user_uid WHERE user_id=$1', (user_id,))
+            data = await con.fetch('SELECT uid FROM user_uid WHERE user_id=$1', user_id)
             result = data
         return result
 
     @check_connection
     async def get_user_from_uid(self, uid: str):
         async with self.pool.acquire() as con:
-            data = await con.fetch('SELECT user_id FROM user_uid WHERE uid=$1', (uid,))
+            data = await con.fetch('SELECT user_id FROM user_uid WHERE uid=$1', uid)
             result = data
         return result
 
     @check_connection
     async def add_user_uid(self, user_id: int, uid: str):
         async with self.pool.acquire() as con:
-            await con.execute("INSERT INTO user_uid (user_id, uid) VALUES ($1, $2)", (user_id, uid))
+            await con.execute("INSERT INTO user_uid (user_id, uid) VALUES ($1, $2)", user_id, uid)
 
     @check_connection
     async def remove_user_uid(self, user_id: int, uid: str):
         async with self.pool.acquire() as con:
-            await con.execute("DELETE FROM user_uid WHERE user_id=$1 AND uid=$2", (user_id, uid))
+            await con.execute("DELETE FROM user_uid WHERE user_id=$1 AND uid=$2", user_id, uid)
 
     @check_connection
     async def get_premium_guild_list(self):
@@ -74,12 +74,12 @@ class ProductionDatabase:
     @check_connection
     async def add_premium_guild(self, guild_id: int):
         async with self.pool.acquire() as con:
-            await con.execute("INSERT INTO premium_guild (guild_id)  VALUES ($1)", (guild_id,))
+            await con.execute("INSERT INTO premium_guild (guild_id)  VALUES ($1)", guild_id)
 
     @check_connection
     async def remove_premium_guild(self, guild_id: int):
         async with self.pool.acquire() as con:
-            await con.execute("DELETE FROM premium_guild WHERE guild_id=$1", (guild_id, ))
+            await con.execute("DELETE FROM premium_guild WHERE guild_id=$1", guild_id)
 
 
 class DebugDatabase(ProductionDatabase):

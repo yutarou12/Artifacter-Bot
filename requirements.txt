@@ -3,4 +3,4 @@ discord.py
 python-dotenv
 jishaku
 requests
-PyMySQL
+asyncpg

@@ -20,6 +20,11 @@ class MyBot(commands.Bot):
         super().__init__(*args, **kwargs)
         self.premium_guild_list = []
         self.tree.on_error = self.on_app_command_error
+        self.loop.create_task(self.setup())
+
+    async def setup(self):
+        await bot.wait_until_ready()
+        self.premium_guild_list = await bot.db.get_premium_guild_list()
 
     async def on_app_command_error(self, interaction: Interaction, error: AppCommandError):
         traceback_channel = await bot.fetch_channel(int(os.getenv('TRACEBACK_CHANNEL_ID')))

@@ -18,6 +18,7 @@ extensions_list = [f[:-3] for f in os.listdir("./cogs") if f.endswith(".py")]
 class MyBot(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.premium_guild_list = []
         self.tree.on_error = self.on_app_command_error
 
     async def on_app_command_error(self, interaction: Interaction, error: AppCommandError):
@@ -45,6 +46,7 @@ class MyBot(commands.Bot):
         await error_channel.send(embed=embed_logs)
 
     async def setup_hook(self):
+        self.premium_guild_list = await bot.db.get_premium_guild_list()
         try:
             await bot.load_extension('jishaku')
         except discord.ext.commands.ExtensionAlreadyLoaded:

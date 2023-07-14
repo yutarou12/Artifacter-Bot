@@ -58,7 +58,7 @@ class Genshin(commands.Cog):
         """UIDからキャラクターカードを生成できます。"""
 
         uid = uid_ or await self.bot.db.get_uid_from_user(interaction.user.id)
-        uid = ''.join(uid.split())
+        uid = ''.join(str(uid).split())
         if not uid:
             return await interaction.response.send_message('UIDを入れて下さい', ephemeral=True)
 

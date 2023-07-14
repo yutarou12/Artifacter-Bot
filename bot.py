@@ -32,7 +32,7 @@ class MyBot(commands.Bot):
 
         embed_logs = Embed(title='Error Log')
         embed_logs.set_author(name=f'{interaction.user.display_name} ({interaction.user.id})',
-                              icon_url=icon_convert(interaction.user.icon))
+                              icon_url=icon_convert(interaction.user.avatar))
         embed_logs.add_field(name='Command', value=interaction.command.name, inline=False)
         embed_logs.add_field(name='Error', value=f'```{error}```', inline=False)
         embed_logs.add_field(name='Traceback Id', value=f'```{msg_traceback.id}```')

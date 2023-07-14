@@ -25,6 +25,11 @@ def cooldown_for_everyone_but_guild(interaction: discord.Interaction) -> Optiona
 class Genshin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.bot.loop.create_task(self.setup())
+
+    async def setup(self):
+        await self.bot.wait_until_ready()
+        self.bot.premium_guild_list = await self.bot.db.get_premium_guild_list()
 
     @app_commands.command(name='uid')
     async def set_uid(self, interaction: discord.Interaction, uid: str = None):

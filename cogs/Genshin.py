@@ -16,9 +16,9 @@ from libs.Convert import fetch_character
 from libs.Database import Database
 
 
-def cooldown_for_everyone_but_guild(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
+async def cooldown_for_everyone_but_guild(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
     db = Database()
-    guild_list = asyncio.run(db.get_premium_guild_list())
+    guild_list = await db.get_premium_guild_list()
     if interaction.guild_id in guild_list:
         return None
     return app_commands.Cooldown(1, 60 * 3)

@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 
 from dotenv import load_dotenv
+from libs.Database import Database
 from cogs.Log import Log
 
 load_dotenv()
@@ -39,7 +40,7 @@ bot = MyBot(
     allowed_mentions=discord.AllowedMentions(replied_user=False, everyone=False),
     help_command=None
 )
-
+bot.db = Database()
 
 if __name__ == '__main__':
     bot.run(os.getenv('DISCORD_BOT_TOKEN'))

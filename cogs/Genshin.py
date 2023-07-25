@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 import requests
 import math
@@ -64,21 +65,34 @@ class Genshin(commands.Cog):
 
         await interaction.response.defer()
 
+        user_cache_name = self.bot.db.get_user_cache(interaction.user.id)
+        if await self.bot.db.get_user_cache(interaction.user.id):
+            with open(f'./data/cache/{user_cache_name}.json', mode='r', encoding='utf-8') as f:
+                user_cache = json.load(f)
+        else:
+            user_cache = {}
+
         async with aiohttp.ClientSession() as session:
-            async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/player', json={"uid": uid}) as r:
+            async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/player',
+                                    json={"uid": uid, "cache": user_cache}) as r:
                 if r.status == 200:
                     j = await r.json()
                     player = j.get("Player")
                     all_data = j.get("AllData")
+                    bool_cache = j.get("Cache")
+                elif r.status == 424:
+                    return await interaction.followup.send(content='現在APIがメンテナンス中です。\n復旧までしばらくお待ちください。')
+                elif r.status == 404:
+                    return await interaction.followup.send(content='データが見つかりませんでした。\nUIDを確認してください。')
                 else:
-                    return await interaction.followup.send(content='取得できませんでした')
+                    return await interaction.followup.send(content='何らかの問題でデータが取得できませんでした。')
 
         first_embed = discord.Embed(title=player["Name"])
         if player["Signature"]:
             first_embed.description = player["Signature"]
         first_embed.add_field(name='螺旋', value=player["Tower"])
         first_embed.add_field(name='アチーブメント', value=player["Achievement"])
-        first_embed.set_footer(text=f'冒険ランク{player["Level"]}・世界ランク{player["worldLevel"]}')
+        first_embed.set_footer(text=f'冒険ランク{player["Level"]}・世界ランク{player["worldLevel"]}{"・キャッシュより"if bool_cache else ""}')
         first_embed.set_thumbnail(url=f'https://enka.network/ui/{player["ProfilePicture"]}.png')
         if player["NameCard"]:
             first_embed.set_image(url=f'https://enka.network/ui/{player["NameCard"]}.png')
@@ -109,6 +123,9 @@ class Genshin(commands.Cog):
                                  user=interaction.user, row=2, custom_id='終了'))
 
         msg = await interaction.followup.send(embed=first_embed, view=view)
+        if not bool_cache:
+            with open(f'./data/cache/{user_cache_name}.json', mode='w') as f:
+                json.dump(all_data, f, indent=4)
         view_re = await view.wait()
         if view_re:
             requests.get(f'http://{os.getenv("API_HOST_NAME")}:8080/api/delete/{uid}')

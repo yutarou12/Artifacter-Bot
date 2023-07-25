@@ -1,4 +1,5 @@
 import os
+import hashlib
 import logging
 from functools import wraps
 
@@ -18,6 +19,8 @@ class ProductionDatabase:
                 "CREATE TABLE IF NOT EXISTS user_uid (user_id bigint NOT NULL PRIMARY KEY, uid char(10) NOT NULL)")
             await conn.execute(
                 "CREATE TABLE IF NOT EXISTS premium_guild (guild_id bigint NOT NULL, PRIMARY KEY (guild_id))")
+            await conn.execute(
+                "CREATE TABLE IF NOT EXISTS user_data_cache (user_id bigint NOT NULL, user_cache, PRIMARY KEY (user_id))")
 
         return self.pool
 
@@ -85,6 +88,26 @@ class ProductionDatabase:
         async with self.pool.acquire() as con:
             await con.execute("DELETE FROM premium_guild WHERE guild_id=$1", guild_id)
 
+    @check_connection
+    async def get_user_cache(self, user_id: int):
+        async with self.pool.acquire() as con:
+            data = await con.execute("SELECT * FROM user_data_cache WHERE user_id=$1", user_id)
+            if data:
+                return data[0].get('user_cache')
+            else:
+                return None
+
+    @check_connection
+    async def add_user_cache_data(self, user_id: int):
+        user_cache = hashlib.sha256(str(user_id).encode()).hexdigest()
+        async with self.pool.acquire() as con:
+            await con.execute("INSERT INTO user_data_cache (user_id, user_cache)  VALUES ($1, $2)", (user_id, user_cache))
+
+    @check_connection
+    async def remove_user_cache_data(self, user_id: int):
+        async with self.pool.acquire() as con:
+            await con.execute("DELETE FROM user_data_cache WHERE user_id=$1", user_id)
+
 
 class DebugDatabase(ProductionDatabase):
 
@@ -103,7 +126,7 @@ class DebugDatabase(ProductionDatabase):
     async def add_user_uid(self, user_id: int, uid: str):
         pass
 
-    async def remove_user_uid(self, user_id: int, uid: str):
+    async def remove_user_uid(self, user_id: int):
         pass
 
     async def get_premium_guid_list(self):
@@ -113,6 +136,15 @@ class DebugDatabase(ProductionDatabase):
         pass
 
     async def remove_premium_guid(self, guild_id: int):
+        pass
+
+    async def get_user_cache(self, user_id: int):
+        pass
+
+    async def add_user_cache_data(self, user_id: int):
+        pass
+
+    async def remove_user_cache_data(self, user_id: int):
         pass
 
 

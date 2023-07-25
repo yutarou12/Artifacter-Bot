@@ -1,4 +1,4 @@
-Pillow
+pillow
 discord.py
 python-dotenv
 jishaku

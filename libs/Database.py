@@ -101,7 +101,7 @@ class ProductionDatabase:
     async def add_user_cache_data(self, user_id: int):
         user_cache = hashlib.sha256(str(user_id).encode()).hexdigest()
         async with self.pool.acquire() as con:
-            await con.execute("INSERT INTO user_data_cache (user_id, user_cache)  VALUES ($1, $2)", (user_id, user_cache))
+            await con.execute("INSERT INTO user_data_cache (user_id, user_cache)  VALUES ($1, $2)", user_id, user_cache)
 
     @check_connection
     async def remove_user_cache_data(self, user_id: int):

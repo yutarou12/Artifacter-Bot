@@ -20,7 +20,7 @@ class ProductionDatabase:
             await conn.execute(
                 "CREATE TABLE IF NOT EXISTS premium_guild (guild_id bigint NOT NULL, PRIMARY KEY (guild_id))")
             await conn.execute(
-                "CREATE TABLE IF NOT EXISTS user_data_cache (user_id bigint NOT NULL, user_cache, PRIMARY KEY (user_id))")
+                "CREATE TABLE IF NOT EXISTS user_data_cache (user_id bigint NOT NULL, user_cache text, PRIMARY KEY (user_id))")
 
         return self.pool
 

@@ -22,7 +22,7 @@ class CacheData(commands.Cog):
         embed = Embed(title='キャッシュ機能設定')
         embed.description = '原神のキャラクター情報を取得している「EnkaNetwork」がメンテナンス等により、' \
                             'データを取得出来なかった際に、一番最後に取得したデータを使うことでビルド画像を生成する機能です。'
-        if not self.bot.db.get_user_cache(interaction.user.id):
+        if not await self.bot.db.get_user_cache(interaction.user.id):
             embed.add_field(name='現在の設定', value='無効', inline=False)
         else:
             embed.add_field(name='現在の設定', value='有効', inline=False)

@@ -39,9 +39,9 @@ class CacheData(commands.Cog):
             return
         elif view.value:
             if await self.bot.db.get_user_cache(interaction.user.id):
-                await self.bot.db.add_user_cache_data(interaction.user.id)
-            else:
                 await self.bot.db.remove_user_cache_data(interaction.user.id)
+            else:
+                await self.bot.db.add_user_cache_data(interaction.user.id)
 
 
 class CacheSettingView(ui.View):

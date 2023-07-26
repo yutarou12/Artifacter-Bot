@@ -91,7 +91,7 @@ class ProductionDatabase:
     @check_connection
     async def get_user_cache(self, user_id: int):
         async with self.pool.acquire() as con:
-            data = await con.execute("SELECT * FROM user_data_cache WHERE user_id=$1", user_id)
+            data = await con.fetch("SELECT * FROM user_data_cache WHERE user_id=$1", user_id)
             if data:
                 return data[0].get('user_cache')
             else:

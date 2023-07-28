@@ -65,8 +65,8 @@ class Genshin(commands.Cog):
 
         await interaction.response.defer()
 
-        user_cache_name = self.bot.db.get_user_cache(interaction.user.id)
-        if await self.bot.db.get_user_cache(interaction.user.id):
+        user_cache_name = await self.bot.db.get_user_cache(interaction.user.id)
+        if user_cache_name:
             with open(f'./data/cache/{user_cache_name}.json', mode='r', encoding='utf-8') as f:
                 user_cache = json.load(f)
         else:

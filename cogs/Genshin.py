@@ -67,8 +67,11 @@ class Genshin(commands.Cog):
 
         user_cache_name = await self.bot.db.get_user_cache(interaction.user.id)
         if user_cache_name:
-            with open(f'./data/cache/{user_cache_name}.json', mode='r', encoding='utf-8') as f:
-                user_cache = json.load(f)
+            try:
+                with open(f'./data/cache/{user_cache_name}.json', mode='r', encoding='utf-8') as f:
+                    user_cache = json.load(f)
+            except FileNotFoundError:
+                user_cache = {}
         else:
             user_cache = {}
 

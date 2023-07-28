@@ -8,7 +8,7 @@ from PIL import Image
 from typing import Optional
 
 import discord
-from discord import app_commands, Interaction, Embed, ui
+from discord import app_commands, Interaction, Embed, ui, ButtonStyle
 from discord.ext import commands
 
 
@@ -50,11 +50,15 @@ class CacheSettingView(ui.View):
         self.timeout = 120
         self.value = None
 
-    @discord.ui.button(label='設定を切り換える', style=discord.ButtonStyle.green)
-    async def confirm_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(content='設定を切り換えました。', ephemeral=True)
+    @discord.ui.button(label='設定を切り換える', style=ButtonStyle.green)
+    async def confirm_button(self, interaction: Interaction, button: ui.Button):
+        await interaction.response.edit_message(content='設定を切り換えました。', ephemeral=True, view=None)
         self.value = True
         self.stop()
+
+    @discord.ui.button(label='キャンセル', style=ButtonStyle.red)
+    async def cancel_button(self, interaction: Interaction, button: ui.Button):
+        await interaction.response.edit_message(content='キャンセル', ephemeral=True, view=None)
 
 
 async def setup(bot):

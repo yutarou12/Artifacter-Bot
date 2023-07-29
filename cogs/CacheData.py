@@ -1,12 +1,3 @@
-import os
-import requests
-import math
-import aiohttp
-
-from io import BytesIO
-from PIL import Image
-from typing import Optional
-
 import discord
 from discord import app_commands, Interaction, Embed, ui, ButtonStyle
 from discord.ext import commands
@@ -31,7 +22,7 @@ class CacheData(commands.Cog):
                        '「無効」にすると、即座に保存されていたデータを抹消します。'
         embed.add_field(name='🔰使い方', value=field_2_text, inline=False)
 
-        view = CacheSettingView(cache_bool=bool(self.bot.db.get_user_cache(interaction.user.id)))
+        view = CacheSettingView(cache_bool=bool(await self.bot.db.get_user_cache(interaction.user.id)))
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
         await view.wait()
 
@@ -56,13 +47,13 @@ class CacheSettingView(ui.View):
     @discord.ui.button(label='設定を切り換える', style=ButtonStyle.green)
     async def confirm_button(self, interaction: Interaction, button: ui.Button):
         await interaction.response.edit_message(content=f'設定を {"**無効**" if self.cache_bool else "**有効**"} に切り換えました。',
-                                                view=None)
+                                                view=None, embed=None)
         self.value = True
         self.stop()
 
     @discord.ui.button(label='キャンセル', style=ButtonStyle.red)
     async def cancel_button(self, interaction: Interaction, button: ui.Button):
-        await interaction.response.edit_message(content='キャンセルしました。', view=None)
+        await interaction.response.edit_message(content='キャンセルしました。', view=None, embed=None)
         self.value = False
         self.stop()
 

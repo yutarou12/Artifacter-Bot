@@ -106,7 +106,10 @@ class ProductionDatabase:
     @check_connection
     async def remove_user_cache_data(self, user_id: int):
         async with self.pool.acquire() as con:
+            user_cache = await self.get_user_cache(user_id)
             await con.execute("DELETE FROM user_data_cache WHERE user_id=$1", user_id)
+            if os.path.isfile(f'./data/cache/{user_cache}.json'):
+                os.remove(f'./data/cache/{user_cache}.json')
 
 
 class DebugDatabase(ProductionDatabase):

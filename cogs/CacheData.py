@@ -20,19 +20,19 @@ class CacheData(commands.Cog):
     @app_commands.command(name='設定')
     async def cmd_cache_setting(self, interaction: Interaction):
         embed = Embed(title='キャッシュ機能設定')
-        embed.description = '原神のキャラクター情報を取得している「EnkaNetwork」がメンテナンス等により、' \
-                            'データを取得出来なかった際に、一番最後に取得したデータを使うことでビルド画像を生成する機能です。'
+        embed.description = '```\n原神のキャラクター情報を取得している「EnkaNetwork」がメンテナンス等で、' \
+                            'データを取得出来なかった際に、一番最後に取得したデータからビルド画像を生成する機能です。\n```'
         if not await self.bot.db.get_user_cache(interaction.user.id):
-            embed.add_field(name='現在の設定', value='無効', inline=False)
+            embed.add_field(name='⚒️ 現在の設定', value='`無効`', inline=False)
         else:
-            embed.add_field(name='現在の設定', value='有効', inline=False)
+            embed.add_field(name='⚒️ 現在の設定', value='`有効`', inline=False)
 
-        field_2_text = '設定を切り換えるには、「設定を切り換える」を押して下さい。\n「有効」にすると次「/build」でデータを取得できた際にデータが保存されます。\n' \
+        field_2_text = '設定を切り換えるには、「設定を切り換える」を押して下さい。\n「有効」にすると次以降「/build」で取得できたデータが保存されます。\n' \
                        '「無効」にすると、即座に保存されていたデータを抹消します。'
         embed.add_field(name='🔰使い方', value=field_2_text, inline=False)
 
-        view = CacheSettingView()
-        await interaction.response.send_message(embed=embed, view=view)
+        view = CacheSettingView(cache_bool=bool(self.bot.db.get_user_cache(interaction.user.id)))
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
         await view.wait()
 
         if view.value is None:
@@ -42,23 +42,29 @@ class CacheData(commands.Cog):
                 await self.bot.db.remove_user_cache_data(interaction.user.id)
             else:
                 await self.bot.db.add_user_cache_data(interaction.user.id)
+        else:
+            return
 
 
 class CacheSettingView(ui.View):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, cache_bool: bool, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.cache_bool = cache_bool
         self.timeout = 120
         self.value = None
 
     @discord.ui.button(label='設定を切り換える', style=ButtonStyle.green)
     async def confirm_button(self, interaction: Interaction, button: ui.Button):
-        await interaction.response.edit_message(content='設定を切り換えました。', ephemeral=True, view=None)
+        await interaction.response.edit_message(content=f'設定を {"**無効**" if self.cache_bool else "**有効**"} に切り換えました。',
+                                                ephemeral=True, view=None)
         self.value = True
         self.stop()
 
     @discord.ui.button(label='キャンセル', style=ButtonStyle.red)
     async def cancel_button(self, interaction: Interaction, button: ui.Button):
-        await interaction.response.edit_message(content='キャンセル', ephemeral=True, view=None)
+        await interaction.response.edit_message(content='キャンセルしました。', ephemeral=True, view=None)
+        self.value = False
+        self.stop()
 
 
 async def setup(bot):

@@ -56,13 +56,13 @@ class CacheSettingView(ui.View):
     @discord.ui.button(label='設定を切り換える', style=ButtonStyle.green)
     async def confirm_button(self, interaction: Interaction, button: ui.Button):
         await interaction.response.edit_message(content=f'設定を {"**無効**" if self.cache_bool else "**有効**"} に切り換えました。',
-                                                ephemeral=True, view=None)
+                                                view=None)
         self.value = True
         self.stop()
 
     @discord.ui.button(label='キャンセル', style=ButtonStyle.red)
     async def cancel_button(self, interaction: Interaction, button: ui.Button):
-        await interaction.response.edit_message(content='キャンセルしました。', ephemeral=True, view=None)
+        await interaction.response.edit_message(content='キャンセルしました。', view=None)
         self.value = False
         self.stop()
 

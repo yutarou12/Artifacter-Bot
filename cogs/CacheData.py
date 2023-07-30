@@ -12,7 +12,7 @@ class CacheData(commands.Cog):
     async def cmd_cache_setting(self, interaction: Interaction):
         """キャッシュ生成の設定を行います"""
         if not await self.bot.db.get_premium_user_bool(interaction.user.id):
-            return await interaction.response.send_meesage('この機能はプレミアムユーザー専用です。\nプレミアムユーザーについては公式サーバーまでお問合せください。',
+            return await interaction.response.send_message('この機能はプレミアムユーザー専用です。\nプレミアムユーザーについては公式サーバーまでお問合せください。',
                                                            ephemeral=True)
         embed = Embed(title='キャッシュ機能設定')
         embed.description = '```\n原神のキャラクター情報を取得している「EnkaNetwork」がメンテナンス等で、' \

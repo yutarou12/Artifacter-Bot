@@ -20,6 +20,8 @@ class ProductionDatabase:
             await conn.execute(
                 "CREATE TABLE IF NOT EXISTS premium_guild (guild_id bigint NOT NULL, PRIMARY KEY (guild_id))")
             await conn.execute(
+                "CREATE TABLE IF NOT EXISTS premium_user (user_id bigint NOT NULL, PRIMARY KEY (user_id))")
+            await conn.execute(
                 "CREATE TABLE IF NOT EXISTS user_data_cache (user_id bigint NOT NULL, user_cache text, PRIMARY KEY (user_id))")
 
         return self.pool
@@ -111,6 +113,29 @@ class ProductionDatabase:
             if os.path.isfile(f'./data/cache/{user_cache}.json'):
                 os.remove(f'./data/cache/{user_cache}.json')
 
+    @check_connection
+    async def get_premium_user_list(self):
+        async with self.pool.acquire() as con:
+            data = await con.fetch("SELECT * FROM premium_user")
+            result = [value['user_id'] for value in data]
+            return result
+
+    @check_connection
+    async def get_premium_user_bool(self, user_id: int):
+        async with self.pool.acquire() as con:
+            data = await con.fetch("SELECT * FROM premium_user WHERE user_id=$1", user_id)
+            return bool(data)
+
+    @check_connection
+    async def add_premium_user(self, user_id: int):
+        async with self.pool.acquire() as con:
+            await con.execute("INSERT INTO premium_user (user_id)  VALUES ($1)", user_id)
+
+    @check_connection
+    async def remove_premium_user(self, user_id: int):
+        async with self.pool.acquire() as con:
+            await con.execute("DELETE FROM premium_user WHERE user_id=$1", user_id)
+
 
 class DebugDatabase(ProductionDatabase):
 
@@ -148,6 +173,18 @@ class DebugDatabase(ProductionDatabase):
         pass
 
     async def remove_user_cache_data(self, user_id: int):
+        pass
+
+    async def get_premium_user_list(self):
+        return []
+
+    async def get_premium_user_bool(self, user_id: int):
+        return True
+
+    async def add_premium_user(self, user_id: int):
+        pass
+
+    async def remove_premium_user(self, user_id: int):
         pass
 
 

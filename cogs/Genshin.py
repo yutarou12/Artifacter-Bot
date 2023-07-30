@@ -1,4 +1,4 @@
-import asyncio
+import json
 import os
 import requests
 import math
@@ -64,51 +64,70 @@ class Genshin(commands.Cog):
 
         await interaction.response.defer()
 
+        user_cache_name = await self.bot.db.get_user_cache(interaction.user.id)
+        if user_cache_name:
+            try:
+                with open(f'./data/cache/{user_cache_name}.json', mode='r', encoding='utf-8') as f:
+                    user_cache = json.load(f)
+            except FileNotFoundError:
+                user_cache = {}
+        else:
+            user_cache = {}
+
         async with aiohttp.ClientSession() as session:
-            async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/player', json={"uid": uid}) as r:
+            async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/player',
+                                    json={"uid": uid, "cache": user_cache}) as r:
                 if r.status == 200:
                     j = await r.json()
                     player = j.get("Player")
                     all_data = j.get("AllData")
+                    bool_cache = j.get("Cache")
+                elif r.status == 424:
+                    return await interaction.followup.send(content='現在APIがメンテナンス中です。\n復旧までしばらくお待ちください。')
+                elif r.status == 404:
+                    return await interaction.followup.send(content='データが見つかりませんでした。\nUIDを確認してください。')
                 else:
-                    return await interaction.followup.send(content='取得できませんでした')
+                    return await interaction.followup.send(content='何らかの問題でデータが取得できませんでした。')
 
         first_embed = discord.Embed(title=player["Name"])
         if player["Signature"]:
             first_embed.description = player["Signature"]
         first_embed.add_field(name='螺旋', value=player["Tower"])
         first_embed.add_field(name='アチーブメント', value=player["Achievement"])
-        first_embed.set_footer(text=f'冒険ランク{player["Level"]}・世界ランク{player["worldLevel"]}')
+        first_embed.set_footer(text=f'冒険ランク{player["Level"]}・世界ランク{player["worldLevel"]}{"・キャッシュより" if bool_cache else ""}')
         first_embed.set_thumbnail(url=f'https://enka.network/ui/{player["ProfilePicture"]}.png')
         if player["NameCard"]:
             first_embed.set_image(url=f'https://enka.network/ui/{player["NameCard"]}.png')
 
         view = BuildView()
         if player["showAvatarInfo"]:
-            view_select = FirstSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
+            view_select = FirstSelect(res_data=all_data, uid=uid, player=player, user=interaction.user, cache=bool_cache)
             for i, chara in enumerate(player["showAvatarInfo"]):
                 name = fetch_character(str(chara["avatarId"]))
                 level = chara["level"]
                 view_select.add_option(label=name, description=f'Lv{level}', value=f'{i}')
         else:
-            view_select = FirstSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
+            view_select = FirstSelect(res_data=all_data, uid=uid, player=player, user=interaction.user, cache=bool_cache)
             view_select.add_option(label='取得できません')
 
         view.add_item(view_select)
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ攻撃ㅤ',
-                                 user=interaction.user, custom_id='攻撃'))
+                                 user=interaction.user, custom_id='攻撃', cache=bool_cache))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤHPㅤ',
-                                 user=interaction.user, custom_id='HP'))
+                                 user=interaction.user, custom_id='HP', cache=bool_cache))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤチャージㅤ',
-                                 user=interaction.user, custom_id='チャージ'))
+                                 user=interaction.user, custom_id='チャージ', cache=bool_cache))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ元素熟知ㅤ',
-                                 user=interaction.user, row=2, custom_id='元素熟知'))
+                                 user=interaction.user, row=2, custom_id='元素熟知', cache=bool_cache))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ防御ㅤ',
-                                 user=interaction.user, row=2, custom_id='防御'))
+                                 user=interaction.user, row=2, custom_id='防御', cache=bool_cache))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.red, label='ㅤ終了ㅤ',
-                                 user=interaction.user, row=2, custom_id='終了'))
+                                 user=interaction.user, row=2, custom_id='終了', cache=bool_cache))
 
         msg = await interaction.followup.send(embed=first_embed, view=view)
+        if not bool_cache:
+            with open(f'./data/cache/{user_cache_name}.json', mode='w') as f:
+                json.dump(all_data, f, indent=4)
         view_re = await view.wait()
         if view_re:
             requests.get(f'http://{os.getenv("API_HOST_NAME")}:8080/api/delete/{uid}')
@@ -125,11 +144,12 @@ class Genshin(commands.Cog):
 
 
 class FirstSelect(discord.ui.Select):
-    def __init__(self, res_data, uid, player, user):
+    def __init__(self, res_data, uid, player, user, cache: bool):
         self.res_data = res_data
         self.uid = uid
         self.player = player
         self.user = user
+        self.cache = cache
         super().__init__()
         self.placeholder = "キャラクターを選択"
 
@@ -182,16 +202,17 @@ class FirstSelect(discord.ui.Select):
 
         embed.add_field(name='天賦レベル', value='/'.join(character_talent_list), inline=False)
 
-        embed.set_footer(text=f'Lv.{character["Level"]}・好感度{character["Love"]}')
+        embed.set_footer(text=f'Lv.{character["Level"]}・好感度{character["Love"]}{"・キャッシュより" if self.cache else ""}')
         await interaction.response.edit_message(embed=embed, attachments=[])
 
 
 class BaseButton(discord.ui.Button):
-    def __init__(self, uid, player, user, *args, **kwargs):
+    def __init__(self, uid, player, user, cache, *args, **kwargs):
         self.chara_data = None
         self.player = player
         self.uid = uid
         self.user = user
+        self.cache = cache
         super().__init__(*args, **kwargs)
 
     async def callback(self, interaction: discord.Interaction):
@@ -252,7 +273,7 @@ class BaseButton(discord.ui.Button):
                              icon_url=f'https://enka.network/ui/{character["SideIconName"]}.png')
             embed.add_field(name='セット効果', value=f'{set_bonus_text}')
             embed.set_footer(text=f'Lv.{character["Level"]} ・ 好感度{character["Love"]} ・ '
-                                  f'スコア:{res["Score"]["total"]}/{res["Score"]["State"]}換算')
+                                  f'スコア:{res["Score"]["total"]}/{res["Score"]["State"]}換算{"・キャッシュより" if self.cache else ""}')
             embed.set_image(url='attachment://image.png')
             await interaction.followup.edit_message(message_id=interaction.message.id, embed=embed, attachments=[file])
 

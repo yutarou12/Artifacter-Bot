@@ -49,7 +49,7 @@ class InformationButton(ui.Button):
             chara_text = '\n・'.join(boss.get("キャラクター"))
             item_text = '\n・'.join(boss.get("ドロップ"))
             embed.add_field(name="場所", value=boss.get("場所"), inline=False)
-            embed.add_field(name="解放条件", value=boss.get("解放条件"), inline=False)
+            embed.add_field(name="開放条件", value=boss.get("開放条件"), inline=False)
             embed.add_field(name="素材", value=f'```\n・{item_text}\n```', inline=False)
             embed.add_field(name="対象キャラクター", value=f'```\n・{chara_text}\n```', inline=False)
 

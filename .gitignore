@@ -132,3 +132,4 @@ dmypy.json
 data/uid_list.json
 data/cache/
 Tests/
+data/backup/*

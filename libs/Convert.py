@@ -12,7 +12,7 @@ def load_json(fp_) -> dict:
 def fetch_character(avatar_id: str) -> str:
     characters_list = load_json('./data/characters.json')
     ja_name_list = load_json('./data/ja_name.json')
-    character_hash = characters_list.get(str(avatar_id))["nameTextMapHash"] \
+    character_hash = characters_list.get(str(avatar_id))["NameTextMapHash"] \
         if characters_list.get(str(avatar_id)) else None
     if not character_hash:
         return '名前取得不可'

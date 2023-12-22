@@ -48,8 +48,10 @@ class Update(commands.Cog):
 
         res_3 = requests.get(f'http://{os.getenv("API_HOST_NAME")}:8080/api/update/{version}/images')
         if res_3.status_code == 404:
+            print(res_3.content)
             return await ctx.send(f'/api/update/{version}/images - 404')
         elif res_3.status_code == 200:
+            print(res_3.content)
             return await ctx.send(f'/api/update/{version}/images - 200')
         else:
             print(res_3.status_code)

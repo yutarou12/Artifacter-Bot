@@ -125,7 +125,8 @@ class Genshin(commands.Cog):
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.red, label='ㅤ終了ㅤ',
                                  user=interaction.user, row=2, custom_id='終了', cache=bool_cache))
         if img_data is not None:
-            img = Image.open(BytesIO(img_data))
+            img_data_en = str(img_data).encode('utf-8')
+            img = Image.open(BytesIO(img_data_en))
             img.save(f'./Tests/{uid}-Profile.png')
             file = discord.File(f'./Tests/{uid}-Profile.png', filename='Profile.png')
             img_embed = discord.Embed()

@@ -82,6 +82,7 @@ class Genshin(commands.Cog):
                     player = j.get("Player")
                     all_data = j.get("AllData")
                     bool_cache = j.get("Cache")
+                    img_data = j.get("Img")
                 elif r.status == 424:
                     return await interaction.followup.send(content='現在APIがメンテナンス中です。\n復旧までしばらくお待ちください。')
                 elif r.status == 404:
@@ -123,8 +124,15 @@ class Genshin(commands.Cog):
                                  user=interaction.user, row=2, custom_id='防御', cache=bool_cache))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.red, label='ㅤ終了ㅤ',
                                  user=interaction.user, row=2, custom_id='終了', cache=bool_cache))
-
-        msg = await interaction.followup.send(embed=first_embed, view=view)
+        if img_data is not None:
+            img = Image.open(BytesIO(img_data))
+            img.save(f'./Tests/{uid}-Profile.png')
+            file = discord.File(f'./Tests/{uid}-Profile.png', filename='Profile.png')
+            img_embed = discord.Embed()
+            img_embed.set_image(url='attachment://image.png')
+            msg = await interaction.followup.send(embed=img_embed, file=file, view=view)
+        else:
+            msg = await interaction.followup.send(embed=first_embed, view=view)
         if not bool_cache:
             with open(f'./data/cache/{user_cache_name}.json', mode='w') as f:
                 json.dump(all_data, f, indent=4)

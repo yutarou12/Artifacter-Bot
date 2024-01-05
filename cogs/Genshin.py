@@ -133,7 +133,7 @@ class Genshin(commands.Cog):
                     created_img.save(f'./Tests/{uid}-Profile.png')
             file = discord.File(f'./Tests/{uid}-Profile.png', filename='Profile.png')
             img_embed = discord.Embed()
-            img_embed.set_image(url='attachment://image.png')
+            img_embed.set_image(url='attachment://Profile.png')
             msg = await interaction.followup.send(embed=img_embed, file=file, view=view)
         else:
             msg = await interaction.followup.send(embed=first_embed, view=view)

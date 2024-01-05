@@ -124,10 +124,13 @@ class Genshin(commands.Cog):
                                  user=interaction.user, row=2, custom_id='防御', cache=bool_cache))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.red, label='ㅤ終了ㅤ',
                                  user=interaction.user, row=2, custom_id='終了', cache=bool_cache))
-        if img_data is not None:
-            img_data_en = str(img_data).encode('utf-8')
-            img = Image.open(BytesIO(img_data_en))
-            img.save(f'./Tests/{uid}-Profile.png')
+        if img_data:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/profile/get',
+                                        json={"uid": uid}) as r:
+                    saved_image_data = await r.content.read()
+                    created_img = Image.open(BytesIO(saved_image_data))
+                    created_img.save(f'./Tests/{uid}-Profile.png')
             file = discord.File(f'./Tests/{uid}-Profile.png', filename='Profile.png')
             img_embed = discord.Embed()
             img_embed.set_image(url='attachment://image.png')

@@ -23,6 +23,12 @@ class ProductionDatabase:
                 "CREATE TABLE IF NOT EXISTS premium_user (user_id bigint NOT NULL, PRIMARY KEY (user_id))")
             await conn.execute(
                 "CREATE TABLE IF NOT EXISTS user_data_cache (user_id bigint NOT NULL, user_cache text, PRIMARY KEY (user_id))")
+            await conn.execute(
+                "CREATE TABLE IF NOT EXISTS uid_lock (uid bigint NOT NULL, user_id bigint, PRIMARY KEY (uid),)"
+            )
+            await conn.execute(
+                "CREATE TABLE IF NOT EXISTS uid_lock_raw (user_id bigint, uid bigint NOT NULL,  hash char(8), PRIMARY KEY (user_id),)"
+            )
 
         return self.pool
 
@@ -136,6 +142,44 @@ class ProductionDatabase:
         async with self.pool.acquire() as con:
             await con.execute("DELETE FROM premium_user WHERE user_id=$1", user_id)
 
+    @check_connection
+    async def set_lock_uid_user(self, user_id: int, uid: int):
+        async with self.pool.acquire() as con:
+            await con.execute("INSERT INTO uid_lock (uid, user_id)  VALUES ($1, $2)", uid, user_id)
+
+    @check_connection
+    async def get_lock_uid_user(self, uid: int, user_id: int):
+        async with self.pool.acquire() as con:
+            data = await con.fetch("SELECT * FROM uid_lock WHERE (uid=$1, user_id=$2)", uid, user_id)
+            return bool(data)
+
+    @check_connection
+    async def remove_lock_uid_user(self, user_id: int):
+        async with self.pool.acquire() as con:
+            await con.execute("DELETE FROM uid_lock WHERE user_id=$1", user_id)
+
+    @check_connection
+    async def add_raw_lock_uid_user(self, uid: int, user_id: int, hash_: str):
+        async with self.pool.acquire() as con:
+            await con.execute("INSERT INTO uid_lock_raw (uid, user_id, hash)  VALUES ($1, $2, $3)", uid, user_id, hash_)
+
+    @check_connection
+    async def get_raw_lock_uid_user(self, user_id: int):
+        async with self.pool.acquire() as con:
+            data = await con.fetch("SELECT * FROM uid_lock_raw WHERE user_id=$1", user_id)
+            return data
+
+    @check_connection
+    async def get_list_raw_hash(self):
+        async with self.pool.acquire() as con:
+            data = await con.fetch("SELECT hash FROM uid_lock_raw")
+            return data
+
+    @check_connection
+    async def remove_raw_lock_uid_user(self, user_id: int):
+        async with self.pool.acquire() as con:
+            await con.execute("DELETE FROM uid_lock_raw WHERE user_id=$1", user_id)
+
 
 class DebugDatabase(ProductionDatabase):
 
@@ -187,6 +231,14 @@ class DebugDatabase(ProductionDatabase):
     async def remove_premium_user(self, user_id: int):
         pass
 
+    async def set_lock_uid_user(self, user_id: int, uid: int):
+        pass
+
+    async def get_lock_uid_user(self, uid: int, user_id: int):
+        return True
+
+    async def remove_lock_uid_user(self, user_id: int):
+        pass
 
 if int(os.getenv('DEBUG')) == 1:
     Database = DebugDatabase

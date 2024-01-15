@@ -3,6 +3,7 @@ import os
 import requests
 import math
 import aiohttp
+import random
 
 from io import BytesIO
 from PIL import Image
@@ -49,6 +50,39 @@ class Genshin(commands.Cog):
                 await self.bot.db.remove_user_uid(interaction.user.id)
             else:
                 await self.bot.db.add_user_uid(interaction.user.id, uid)
+
+    @app_commands.command(name='ロック設定')
+    async def set_lock_uid(self, interaction: discord.Interaction, uid: str):
+        """UIDをユーザーと結びつけ、他のユーザーに勝手にビルド画像を生成されないように設定します"""
+        raw_data = await self.bot.db.get_raw_lock_uid_user(interaction.user.id)
+        if not raw_data:
+            hash_in = True
+            new_hash = 0
+            while hash_in:
+                hash_list = await self.bot.db.get_list_raw_hash()
+                new_hash = random.randrange(10 ** 10, 10 ** 11)
+                if new_hash not in hash_list:
+                    hash_in = False
+            await self.bot.db.add_raw_lock_uid_user(uid, interaction.user.id, str(new_hash))
+            embed = discord.Embed(title='UID 本人確認', description='プロフィールのコメントを使って、本人認証をします。\nこれは1アカウント1UIDまでの紐付けとなります。')
+            embed.add_field(name='Step.1', value='GenshinImpact を開き、自分のプロフィールのコメント欄を編集に行きます。', inline=False)
+            embed.add_field(name='Step.2', value='編集画面にて、次の8桁の数字を入れるか、文章の最後に書き加えてください。', inline=False)
+            embed.add_field(name='Step.3', value='約5分後にもう一度、このコマンドを実行します。\n正しく入力できていると本人確認が完了します。', inline=False)
+            embed.set_footer(text='このメッセージはコマンドを実行した人以外には見えていません。')
+            return await interaction.response.send_message(embed=embed, ephemeral=True)
+
+        else:
+            r = requests.get(f'https://enka.network/api/uid/{uid}')
+            data = r.json()
+            if data and data.get('playerInfo') and data.get('playerInfo').get('signature'):
+                signature = data.get('playerInfo').get('signature')
+                if str(raw_data[2]) in signature:
+                    await self.bot.db.set_lock_uid_user(interaction.user.id, int(uid))
+                    embed = discord.Embed(title='UID 本人確認', description='本人確認が完了しました。')
+                    embed.set_image(url='https://enka.network/api')
+                    return await interaction.response.send_message(embed=embed, ephemeral=True)
+                else:
+                    embed = discord.Embed(title='UID 本人確認', description='本人確認が完了しました。')
 
     @app_commands.command(name='build')
     @app_commands.checks.dynamic_cooldown(cooldown_for_everyone_but_guild, key=lambda i: (i.guild_id, i.user.id))

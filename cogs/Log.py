@@ -34,8 +34,9 @@ class Log(commands.Cog):
             command_channel = await self.bot.fetch_channel(int(os.getenv('ON_INTERACTION_CHANNEL_ID')))
             if command_channel:
                 d_now = datetime.now(pytz.timezone('Asia/Tokyo'))
+                d_now = d_now.strftime('%Y-%m-%d %H:%M:%S')
                 cmd_name = interaction.command.qualified_name
-                await self.bot.db.add_cmd_log(interaction.user.id, cmd_name, command_channel.id, d_now)
+                await self.bot.db.add_cmd_log(interaction.user.id, cmd_name, interaction.channel.id, d_now)
 
 
 async def setup(bot):

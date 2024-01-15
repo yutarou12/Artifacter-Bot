@@ -23,6 +23,8 @@ class ProductionDatabase:
                 "CREATE TABLE IF NOT EXISTS premium_user (user_id bigint NOT NULL, PRIMARY KEY (user_id))")
             await conn.execute(
                 "CREATE TABLE IF NOT EXISTS user_data_cache (user_id bigint NOT NULL, user_cache text, PRIMARY KEY (user_id))")
+            await conn.execute(
+                "CREATE TABLE IF NOT EXISTS cmd_log (user_id bigint, cmd_name text, ch_id bigint, cmd_date timestamp)")
 
         return self.pool
 
@@ -136,6 +138,17 @@ class ProductionDatabase:
         async with self.pool.acquire() as con:
             await con.execute("DELETE FROM premium_user WHERE user_id=$1", user_id)
 
+    @check_connection
+    async def add_cmd_log(self, user_id: int, cmd_name: str, ch_id: int, on_cmd: str):
+        async with self.pool.acquire() as con:
+            await con.execute("INSERT INTO cmd_log (user_id, cmd_name, ch_id, cmd_date)  VALUES ($1,$2,$3,$4)", user_id, cmd_name, ch_id, on_cmd)
+
+    @check_connection
+    async def get_cmd_log(self):
+        async with self.pool.acquire() as con:
+            data = await con.fetch("SELECT * FROM cmd_log")
+            return data
+
 
 class DebugDatabase(ProductionDatabase):
 
@@ -186,6 +199,12 @@ class DebugDatabase(ProductionDatabase):
 
     async def remove_premium_user(self, user_id: int):
         pass
+
+    async def add_cmd_log(self, user_id: int, cmd_name: str, ch_id: int, on_cmd: str):
+        pass
+
+    async def get_cmd_log(self):
+        return []
 
 
 if int(os.getenv('DEBUG')) == 1:

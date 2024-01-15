@@ -2,6 +2,7 @@ import math
 import os
 
 from datetime import datetime
+import pytz
 
 from discord import Interaction, Embed, Game
 from discord.ext import commands
@@ -32,11 +33,9 @@ class Log(commands.Cog):
         if interaction.command:
             command_channel = await self.bot.fetch_channel(int(os.getenv('ON_INTERACTION_CHANNEL_ID')))
             if command_channel:
+                d_now = datetime.now(pytz.timezone('Asia/Tokyo'))
                 cmd_name = interaction.command.qualified_name
-                embed = Embed(title='Command Log')
-                embed.add_field(name='Command', value=f'{cmd_name}', inline=False)
-                embed.add_field(name='User', value=f'{interaction.user.display_name} ({interaction.user.id})', inline=False)
-                await command_channel.send(embed=embed)
+                await self.bot.db.add_cmd_log(interaction.user.id, cmd_name, command_channel.id, d_now)
 
 
 async def setup(bot):

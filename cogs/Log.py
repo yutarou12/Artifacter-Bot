@@ -2,7 +2,6 @@ import math
 import os
 
 from datetime import datetime
-
 from discord import Interaction, Embed, Game
 from discord.ext import commands
 
@@ -30,13 +29,8 @@ class Log(commands.Cog):
     @commands.Cog.listener()
     async def on_interaction(self, interaction: Interaction):
         if interaction.command:
-            command_channel = await self.bot.fetch_channel(int(os.getenv('ON_INTERACTION_CHANNEL_ID')))
-            if command_channel:
-                cmd_name = interaction.command.qualified_name
-                embed = Embed(title='Command Log')
-                embed.add_field(name='Command', value=f'{cmd_name}', inline=False)
-                embed.add_field(name='User', value=f'{interaction.user.display_name} ({interaction.user.id})', inline=False)
-                await command_channel.send(embed=embed)
+            cmd_name = interaction.command.qualified_name
+            await self.bot.db.add_cmd_log(interaction.user.id, cmd_name, interaction.channel.id)
 
 
 async def setup(bot):

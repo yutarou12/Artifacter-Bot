@@ -139,9 +139,9 @@ class ProductionDatabase:
             await con.execute("DELETE FROM premium_user WHERE user_id=$1", user_id)
 
     @check_connection
-    async def add_cmd_log(self, user_id: int, cmd_name: str, ch_id: int, on_cmd: str):
+    async def add_cmd_log(self, user_id: int, cmd_name: str, ch_id: int):
         async with self.pool.acquire() as con:
-            await con.execute("INSERT INTO cmd_log (user_id, cmd_name, ch_id, cmd_date)  VALUES ($1,$2,$3,$4)", user_id, cmd_name, ch_id, on_cmd)
+            await con.execute("INSERT INTO cmd_log (user_id, cmd_name, ch_id, cmd_date)  VALUES ($1,$2,$3,now())", user_id, cmd_name, ch_id)
 
     @check_connection
     async def get_cmd_log(self):

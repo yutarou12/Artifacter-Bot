@@ -200,7 +200,7 @@ class DebugDatabase(ProductionDatabase):
     async def remove_premium_user(self, user_id: int):
         pass
 
-    async def add_cmd_log(self, user_id: int, cmd_name: str, ch_id: int, on_cmd: str):
+    async def add_cmd_log(self, user_id: int, cmd_name: str, ch_id: int):
         pass
 
     async def get_cmd_log(self):

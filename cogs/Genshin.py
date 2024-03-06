@@ -18,7 +18,7 @@ def cooldown_for_everyone_but_guild(interaction: discord.Interaction) -> Optiona
     guild_list = interaction.client.premium_guild_list
     if interaction.guild_id in guild_list:
         return None
-    return app_commands.Cooldown(1, 60 * 3)
+    return app_commands.Cooldown(1, 60 * 1)
 
 
 user_party_cache: Mapping[int, dict] = {}
@@ -67,7 +67,7 @@ class Genshin(commands.Cog):
 
         async with aiohttp.ClientSession() as session:
             async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/player',
-                                    json={"uid": uid}) as r:
+                                    json={"uid": uid, "user_id": interaction.user.id}) as r:
                 if r.status == 200:
                     j = await r.json()
                     player = j.get("Player")
@@ -116,7 +116,6 @@ class Genshin(commands.Cog):
             return await msg.edit(view=None)
 
     @app_commands.command(name='build')
-    @app_commands.checks.dynamic_cooldown(cooldown_for_everyone_but_guild, key=lambda i: (i.guild_id, i.user.id))
     @app_commands.rename(uid_='uid')
     async def cmd_build(self, interaction: discord.Interaction, uid_: str = None):
         """UIDからキャラクターカードを生成できます。"""
@@ -131,7 +130,7 @@ class Genshin(commands.Cog):
 
         async with aiohttp.ClientSession() as session:
             async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/player',
-                                    json={"uid": uid}) as r:
+                                    json={"uid": uid, "user_id": interaction.user.id}) as r:
                 if r.status == 200:
                     j = await r.json()
                     player = j.get("Player")

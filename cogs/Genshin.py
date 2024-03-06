@@ -67,7 +67,7 @@ class Genshin(commands.Cog):
 
         async with aiohttp.ClientSession() as session:
             async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/player',
-                                    json={"uid": uid}) as r:
+                                    json={"uid": uid, "user_id": interaction.user.id}) as r:
                 if r.status == 200:
                     j = await r.json()
                     player = j.get("Player")
@@ -130,7 +130,7 @@ class Genshin(commands.Cog):
 
         async with aiohttp.ClientSession() as session:
             async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/player',
-                                    json={"uid": uid}) as r:
+                                    json={"uid": uid, "user_id": interaction.user.id}) as r:
                 if r.status == 200:
                     j = await r.json()
                     player = j.get("Player")

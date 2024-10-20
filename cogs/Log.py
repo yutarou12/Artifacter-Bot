@@ -1,9 +1,10 @@
 import math
-import os
 
 from datetime import datetime
 from discord import Interaction, Embed, Game
 from discord.ext import commands
+
+from libs.env import ON_READY_CHANNEL_ID
 
 
 class Log(commands.Cog):
@@ -14,7 +15,7 @@ class Log(commands.Cog):
     async def on_ready(self):
         print(f'{self.bot.user.name} でログインしました')
         print(f'サーバー数: {len(self.bot.guilds)}')
-        log_channel = await self.bot.fetch_channel(int(os.getenv('ON_READY_CHANNEL_ID')))
+        log_channel = await self.bot.fetch_channel(ON_READY_CHANNEL_ID)
         if log_channel:
             today_stamp = math.floor(datetime.utcnow().timestamp())
             embed = Embed(title='on_ready')

@@ -1,4 +1,3 @@
-import os
 import requests
 import math
 import aiohttp
@@ -12,6 +11,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from libs.Convert import fetch_character
+from libs.env import API_HOST_NAME
 
 
 def cooldown_for_everyone_but_guild(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
@@ -66,7 +66,7 @@ class Genshin(commands.Cog):
         await interaction.response.defer()
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/player',
+            async with session.post(f'http://{API_HOST_NAME}:8080/api/player',
                                     json={"uid": uid, "user_id": interaction.user.id}) as r:
                 if r.status == 200:
                     j = await r.json()
@@ -112,7 +112,7 @@ class Genshin(commands.Cog):
         if view_re:
             if user_party_cache.get(interaction.user.id):
                 del user_party_cache[interaction.user.id]
-            requests.get(f'http://{os.getenv("API_HOST_NAME")}:8080/api/team/delete/{uid}')
+            requests.get(f'http://{API_HOST_NAME}:8080/api/team/delete/{uid}')
             return await msg.edit(view=None)
 
     @app_commands.command(name='build')
@@ -129,7 +129,7 @@ class Genshin(commands.Cog):
         await interaction.response.defer()
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/player',
+            async with session.post(f'http://{API_HOST_NAME}:8080/api/player',
                                     json={"uid": uid, "user_id": interaction.user.id}) as r:
                 if r.status == 200:
                     j = await r.json()
@@ -179,7 +179,7 @@ class Genshin(commands.Cog):
                                  user=interaction.user, row=2, custom_id='終了'))
         if img_data:
             async with aiohttp.ClientSession() as session:
-                async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/profile/get',
+                async with session.post(f'http://{API_HOST_NAME}:8080/api/profile/get',
                                         json={"uid": uid}) as r:
                     saved_image_data = await r.content.read()
                     created_img = Image.open(BytesIO(saved_image_data))
@@ -192,7 +192,7 @@ class Genshin(commands.Cog):
             msg = await interaction.followup.send(embed=first_embed, view=view)
         view_re = await view.wait()
         if view_re:
-            requests.get(f'http://{os.getenv("API_HOST_NAME")}:8080/api/delete/{uid}')
+            requests.get(f'http://{API_HOST_NAME}:8080/api/delete/{uid}')
             return await msg.edit(view=None)
 
     @cmd_build.error
@@ -224,7 +224,7 @@ class FirstSelect(discord.ui.Select):
                 "index": int(self.values[0]),
                 "uid": int(self.uid)
             }
-            async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/converter', json=data) as r:
+            async with session.post(f'http://{API_HOST_NAME}:8080/api/converter', json=data) as r:
                 if r.status == 200:
                     res = await r.json()
                 else:
@@ -280,7 +280,7 @@ class BaseButton(discord.ui.Button):
             return
         if self.custom_id == '終了':
             self.view.stop()
-            requests.get(f'http://{os.getenv("API_HOST_NAME")}:8080/api/delete/{self.uid}')
+            requests.get(f'http://{API_HOST_NAME}:8080/api/delete/{self.uid}')
             return await interaction.response.edit_message(view=None)
         else:
             async with aiohttp.ClientSession() as session:
@@ -288,7 +288,7 @@ class BaseButton(discord.ui.Button):
                     "types": self.custom_id,
                     "uid": int(self.uid)
                 }
-                async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/artifacts', json=data) as r:
+                async with session.post(f'http://{API_HOST_NAME}:8080/api/artifacts', json=data) as r:
                     if r.status == 200:
                         res = await r.json()
                     else:
@@ -302,7 +302,7 @@ class BaseButton(discord.ui.Button):
                     "guild_id": interaction.guild_id,
                     "uid": int(self.uid),
                 }
-                async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/generation', json=data) as r:
+                async with session.post(f'http://{API_HOST_NAME}:8080/api/generation', json=data) as r:
                     if r.status == 200:
                         image_data = await r.content.read()
                         img = Image.open(BytesIO(image_data))
@@ -513,7 +513,7 @@ async def generate_image(sub_chara, main_chara, res_data, uid, gen_type, user_id
             "index": all_chara,
             "uid": int(uid)
         }
-        async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/team/converter', json=data) as r:
+        async with session.post(f'http://{API_HOST_NAME}:8080/api/team/converter', json=data) as r:
             if not r.status == 200:
                 return 1
 
@@ -522,7 +522,7 @@ async def generate_image(sub_chara, main_chara, res_data, uid, gen_type, user_id
             "types": gen_type,
             "uid": int(uid)
         }
-        async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/team/artifacts', json=data) as r:
+        async with session.post(f'http://{API_HOST_NAME}:8080/api/team/artifacts', json=data) as r:
             if r.status == 200:
                 res = await r.json()
             else:
@@ -534,7 +534,7 @@ async def generate_image(sub_chara, main_chara, res_data, uid, gen_type, user_id
             "artifact_data": res[1],
             "uid": int(uid),
         }
-        async with session.post(f'http://{os.getenv("API_HOST_NAME")}:8080/api/team/generation', json=data) as r:
+        async with session.post(f'http://{API_HOST_NAME}:8080/api/team/generation', json=data) as r:
             if r.status == 200:
                 image_data = await r.content.read()
                 img = Image.open(BytesIO(image_data))
@@ -558,7 +558,7 @@ class EndButton(discord.ui.Button):
             self.view.stop()
             if user_party_cache.get(interaction.user.id):
                 del user_party_cache[interaction.user.id]
-            requests.get(f'http://{os.getenv("API_HOST_NAME")}:8080/api/team/delete/{self.uid}')
+            requests.get(f'http://{API_HOST_NAME}:8080/api/team/delete/{self.uid}')
             return await interaction.response.edit_message(view=None)
 
 

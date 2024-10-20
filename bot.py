@@ -6,11 +6,10 @@ from discord import Interaction, Embed
 from discord.app_commands import AppCommandError
 from discord.ext import commands
 
-from dotenv import load_dotenv
 from libs.Database import Database
 from libs.Convert import icon_convert
+import libs.env as env
 
-load_dotenv()
 
 extensions_list = [f[:-3] for f in os.listdir("./cogs") if f.endswith(".py")]
 
@@ -22,8 +21,8 @@ class MyBot(commands.Bot):
         self.tree.on_error = self.on_app_command_error
 
     async def on_app_command_error(self, interaction: Interaction, error: AppCommandError):
-        traceback_channel = await bot.fetch_channel(int(os.getenv('TRACEBACK_CHANNEL_ID')))
-        error_channel = await bot.fetch_channel(int(os.getenv('ERROR_CHANNEL_ID')))
+        traceback_channel = await bot.fetch_channel(env.TRACEBACK_CHANNEL_ID)
+        error_channel = await bot.fetch_channel(env.ERROR_CHANNEL_ID)
 
         tracebacks = getattr(error, 'traceback', error)
         tracebacks = ''.join(traceback.TracebackException.from_exception(tracebacks).format())
@@ -72,4 +71,4 @@ bot = MyBot(
 bot.db = Database()
 
 if __name__ == '__main__':
-    bot.run(os.getenv('DISCORD_BOT_TOKEN'))
+    bot.run(env.DISCORD_BOT_TOKEN)

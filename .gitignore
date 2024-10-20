@@ -129,7 +129,6 @@ dmypy.json
 .pyre/
 
 .idea/
-data/uid_list.json
 data/characters.json
 data/ja_name.json
 data/cache/

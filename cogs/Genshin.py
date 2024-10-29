@@ -65,9 +65,11 @@ class Genshin(commands.Cog):
 
         await interaction.response.defer()
 
+        user_premium_bool = await self.bot.db.get_premium_user_bool(interaction.user.id)
+
         async with aiohttp.ClientSession() as session:
             async with session.post(f'http://{API_HOST_NAME}:8080/api/player',
-                                    json={"uid": uid, "user_id": interaction.user.id}) as r:
+                                    json={"uid": uid, "user_id": interaction.user.id, "profile": user_premium_bool}) as r:
                 if r.status == 200:
                     j = await r.json()
                     player = j.get("Player")
@@ -128,9 +130,11 @@ class Genshin(commands.Cog):
 
         await interaction.response.defer()
 
+        user_premium_bool = await self.bot.db.get_premium_user_bool(interaction.user.id)
+
         async with aiohttp.ClientSession() as session:
             async with session.post(f'http://{API_HOST_NAME}:8080/api/player',
-                                    json={"uid": uid, "user_id": interaction.user.id}) as r:
+                                    json={"uid": uid, "user_id": interaction.user.id, "profile": user_premium_bool}) as r:
                 if r.status == 200:
                     j = await r.json()
                     player = j.get("Player")

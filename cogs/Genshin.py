@@ -150,7 +150,11 @@ class Genshin(commands.Cog):
         first_embed = discord.Embed(title=player["Name"])
         if player["Signature"]:
             first_embed.description = player["Signature"]
-        first_embed.add_field(name='螺旋', value=player["Tower"])
+        first_embed.add_field(name='深境螺旋', value=player["Tower"])
+        if player["Theater"].get("theaterActIndex"):
+            first_embed.add_field(name='幻想シアター', value=f'第{player["Theater"].get("theaterActIndex")}幕')
+        else:
+            first_embed.add_field(name='幻想シアター', value='未記録')
         first_embed.add_field(name='アチーブメント', value=player["Achievement"])
         first_embed.set_footer(text=f'冒険ランク{player["Level"]}・世界ランク{player["worldLevel"]}')
         first_embed.set_thumbnail(url=f'https://enka.network/ui/{player["ProfilePicture"]}.png')

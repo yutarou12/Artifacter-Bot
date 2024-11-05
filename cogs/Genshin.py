@@ -307,7 +307,6 @@ class BaseButton(discord.ui.Button):
             async with aiohttp.ClientSession() as session:
                 data = {
                     "data": res,
-                    "guild_id": interaction.guild_id,
                     "uid": int(self.uid),
                 }
                 async with session.post(f'http://{API_HOST_NAME}:8080/api/generation', json=data) as r:

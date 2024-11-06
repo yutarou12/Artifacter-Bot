@@ -183,6 +183,8 @@ class Genshin(commands.Cog):
                                  user=interaction.user, row=2, custom_id='元素熟知'))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ防御ㅤ',
                                  user=interaction.user, row=2, custom_id='防御'))
+        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='  会心  ',
+                                 user=interaction.user, row=2, custom_id='会心'))
         view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.red, label='ㅤ終了ㅤ',
                                  user=interaction.user, row=2, custom_id='終了'))
         if img_data:

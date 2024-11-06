@@ -129,10 +129,12 @@ dmypy.json
 .pyre/
 
 .idea/
-data/characters.json
-data/ja_name.json
 data/cache/
 Tests/
 data/backup/*
 docker-compose.yml
 Dockerfile
+data/append_prop_name.json
+data/characters.json
+data/fight_name.json
+data/ja_name.json

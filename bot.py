@@ -14,7 +14,7 @@ import libs.env as env
 extensions_list = [f[:-3] for f in os.listdir("./cogs") if f.endswith(".py")]
 
 
-class MyBot(commands.Bot):
+class MyBot(commands.AutoShardedBot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.premium_guild_list = []
@@ -66,7 +66,8 @@ bot = MyBot(
     command_prefix=commands.when_mentioned_or('a.'),
     intents=intents,
     allowed_mentions=discord.AllowedMentions(replied_user=False, everyone=False),
-    help_command=None
+    help_command=None,
+    shard_count=5
 )
 bot.db = Database()
 

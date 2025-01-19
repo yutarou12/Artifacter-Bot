@@ -246,34 +246,32 @@ class FirstSelect(discord.ui.Select):
         for q, n in res['Score']['Bonus']:
             set_bonus_text += f'**{q}セット** `{n}`\n'
         discord_icon_list_reversed = {
-            "HP": "A_PROP_HP",
-            "攻撃力": "A_PROP_ATTACK",
-            "防御力": "A_PROP_DEFENSE",
-            "HPパーセンテージ": "A_PROP_HP_PERCENT",
-            "攻撃パーセンテージ": "A_PROP_ATTACK_PERCENT",
-            "防御パーセンテージ": "A_PROP_DEFENSE_PERCENT",
-            "会心率": "A_PROP_CRITICAL",
-            "会心ダメージ": "A_PROP_CRITICAL_HURT",
-            "元素チャージ効率": "A_PROP_CHARGE_EFFICIENCY",
-            "与える治癒効果": "A_PROP_HEAL_ADD",
-            "元素熟知": "A_PROP_ELEMENT_MASTERY",
-            "物理ダメージ": "A_PROP_PHYSICAL_HURT",
-            "炎元素ダメージ": "E_PROP_FIRE_HURT",
-            "雷元素ダメージ": "E_PROP_ELEC_HURT",
-            "水元素ダメージ": "E_PROP_WATER_HURT",
-            "風元素ダメージ": "E_PROP_WIND_HURT",
-            "氷元素ダメージ": "E_PROP_ICE_HURT",
-            "岩元素ダメージ": "E_PROP_ROCK_HURT",
-            "草元素ダメージ": "E_PROP_GRASS_HURT"
-        }
+            "HP": {"name": "A_PROP_HP", "id": 1330326300627566662},
+            "攻撃力": {"name": "A_PROP_ATTACK", "id": 1330326294327722089},
+            "防御力": {"name": "A_PROP_DEFENSE", "id": 1330326297985155164},
+            "会心率": {"name": "A_PROP_CRITICAL", "id": 1330326290838065263},
+            "会心ダメージ": {"name": "A_PROP_CRITICAL_HURT", "id": 1330326288514289748},
+            "元素チャージ効率": {"name": "A_PROP_CHARGE_EFFICIENCY", "id": 1330326304721080320},
+            "元素熟知": {"name": "A_PROP_ELEMENT_MASTERY", "id": 1330326296059711568},
+            "物理ダメージ": {"name": "A_PROP_PHYSICAL_HURT", "id": 1330374399991222417},
+            "炎元素ダメージ": {"name": "E_PROP_FIRE_HURT", "id": 1330373941403062282},
+            "雷元素ダメージ": {"name": "E_PROP_ELEC_HURT", "id": 1330373933114982430},
+            "水元素ダメージ": {"name": "E_PROP_WATER_HURT", "id": 1330373945010032660},
+            "風元素ダメージ": {"name": "E_PROP_WIND_HURT", "id": 1330373931424682137},
+            "氷元素ダメージ": {"name": "E_PROP_ICE_HURT", "id": 1330373948289978455},
+            "岩元素ダメージ": {"name": "E_PROP_ROCK_HURT", "id": 1330373943412129964},
+            "草元素ダメージ": {"name": "E_PROP_GRASS_HURT", "id": 1330373946616446976}
+            }
 
         status_text = list()
         raw_list = list()
         for k, v in character['Status'].items():
+            icon = discord_icon_list_reversed.get(k)
+            icon_str = f'<:{icon.get("name")}:{icon.get("id")}>'
             if k not in ['HP', '攻撃力', '防御力']:
-                status_text.append(f':{discord_icon_list_reversed.get(k)}: **{k}**：{v}')
+                status_text.append(f'{icon_str} **{k}**：{v}')
             else:
-                raw_list.insert(0, f':{discord_icon_list_reversed.get(k)}: **{k}**：{v}')
+                raw_list.insert(0, f'{icon_str} **{k}**：{v}')
         for r in raw_list:
             status_text.insert(0, r)
 

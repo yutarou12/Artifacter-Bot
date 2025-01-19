@@ -245,13 +245,35 @@ class FirstSelect(discord.ui.Select):
         set_bonus_text = ''
         for q, n in res['Score']['Bonus']:
             set_bonus_text += f'**{q}セット** `{n}`\n'
+        discord_icon_list_reversed = {
+            "HP": "A_PROP_HP",
+            "攻撃力": "A_PROP_ATTACK",
+            "防御力": "A_PROP_DEFENSE",
+            "HPパーセンテージ": "A_PROP_HP_PERCENT",
+            "攻撃パーセンテージ": "A_PROP_ATTACK_PERCENT",
+            "防御パーセンテージ": "A_PROP_DEFENSE_PERCENT",
+            "会心率": "A_PROP_CRITICAL",
+            "会心ダメージ": "A_PROP_CRITICAL_HURT",
+            "元素チャージ効率": "A_PROP_CHARGE_EFFICIENCY",
+            "与える治癒効果": "A_PROP_HEAL_ADD",
+            "元素熟知": "A_PROP_ELEMENT_MASTERY",
+            "物理ダメージ": "A_PROP_PHYSICAL_HURT",
+            "炎元素ダメージ": "E_PROP_FIRE_HURT",
+            "雷元素ダメージ": "E_PROP_ELEC_HURT",
+            "水元素ダメージ": "E_PROP_WATER_HURT",
+            "風元素ダメージ": "E_PROP_WIND_HURT",
+            "氷元素ダメージ": "E_PROP_ICE_HURT",
+            "岩元素ダメージ": "E_PROP_ROCK_HURT",
+            "草元素ダメージ": "E_PROP_GRASS_HURT"
+        }
+
         status_text = list()
         raw_list = list()
         for k, v in character['Status'].items():
             if k not in ['HP', '攻撃力', '防御力']:
-                status_text.append(f'**{k}**：{v}')
+                status_text.append(f':{discord_icon_list_reversed.get(k)}: **{k}**：{v}')
             else:
-                raw_list.insert(0, f'**{k}**：{v}')
+                raw_list.insert(0, f':{discord_icon_list_reversed.get(k)}: **{k}**：{v}')
         for r in raw_list:
             status_text.insert(0, r)
 

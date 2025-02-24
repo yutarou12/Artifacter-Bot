@@ -14,7 +14,6 @@ class WebhookHandler(logging.Handler):
     def emit(self, record: logging.LogRecord):
         data = {
             "content": self.format(record),
-            "username": "Bot Log",
         }
         params = {"thread_id": env.LOGGING_CHANNEL_ID}
         res = requests.post(url=self.url, json=data, params=params)

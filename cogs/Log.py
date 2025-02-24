@@ -13,14 +13,19 @@ class Log(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print(f'{self.bot.user.name} でログインしました')
-        print(f'サーバー数: {len(self.bot.guilds)}')
+        await self.bot.wait_until_ready()
+        self.bot.logger.info(f'{self.bot.user.name} でログインしました')
+        app_info = self.bot.application
+        if app_info:
+            guild_count = app_info.approximate_guild_count
+        else:
+            guild_count = 0
         log_channel = await self.bot.fetch_channel(ON_READY_CHANNEL_ID)
         if log_channel:
             today_stamp = math.floor(datetime.utcnow().timestamp())
             embed = Embed(title='on_ready')
             embed.add_field(name='NowTime', value=f'<t:{today_stamp}:d> <t:{today_stamp}:T>', inline=False)
-            embed.add_field(name='Servers', value=f'{len(self.bot.guilds)}', inline=False)
+            embed.add_field(name='Servers', value=f'{guild_count}', inline=False)
             await log_channel.send(embed=embed)
 
         await self.bot.change_presence(

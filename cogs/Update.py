@@ -45,18 +45,18 @@ class Update(commands.Cog):
             elif file == 'chara':
                 res_data = res_2.json()
                 add_file('characters', version, res_data)
-            print(res_2.encoding)
-            print(f'完了 - {file}')
+            self.bot.logger.info(res_2.encoding)
+            self.bot.logger.info(f'完了 - {file}')
 
         res_3 = requests.get(f'http://{API_HOST_NAME}:8080/api/update/{version}/images')
         if res_3.status_code == 404:
-            print(res_3.content)
+            self.bot.logger.warning(res_3.content)
             return await ctx.send(f'/api/update/{version}/images - 404')
         elif res_3.status_code == 200:
-            print(res_3.content)
+            self.bot.logger.info(res_3.content)
             return await ctx.send(f'/api/update/{version}/images - 200')
         else:
-            print(res_3.status_code)
+            self.bot.logger.warning(res_3.status_code)
 
 
 async def setup(bot):

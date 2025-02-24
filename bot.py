@@ -83,6 +83,7 @@ bot = MyBot(
     shard_count=5
 )
 bot.db = Database()
+bot.logger = logger
 
 if __name__ == '__main__':
     bot.run(env.DISCORD_BOT_TOKEN)

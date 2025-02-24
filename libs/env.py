@@ -19,3 +19,5 @@ API_HOST_NAME: str = os.environ.get("API_HOST_NAME", "")
 API_PORT: str = os.environ.get("API_PORT", "")
 
 DEBUG: int = int(os.environ.get("DEBUG", 0))
+
+WEBHOOK_URL: str = os.environ.get("WEBHOOK_URL", "")

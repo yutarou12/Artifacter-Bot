@@ -1,3 +1,5 @@
+import logging
+import logging.handlers
 import os
 import traceback
 
@@ -9,9 +11,20 @@ from discord.ext import commands
 from libs.Database import Database
 from libs.Convert import icon_convert
 import libs.env as env
-
+from libs.OriginHandler import WebhookHandler, DatetimeFormatter
 
 extensions_list = [f[:-3] for f in os.listdir("./cogs") if f.endswith(".py")]
+
+logger = logging.getLogger('discord')
+logger.setLevel(logging.INFO)
+logging.getLogger('discord.http').setLevel(logging.INFO)
+dt_fmt = '%Y-%m-%d %H:%M:%S'
+formatter = DatetimeFormatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
+
+discord_handler = WebhookHandler(url=env.WEBHOOK_URL)
+discord_handler.setFormatter(formatter)
+discord_handler.setLevel(level=logging.INFO)
+logger.addHandler(discord_handler)
 
 
 class MyBot(commands.AutoShardedBot):

@@ -3,6 +3,8 @@ from datetime import timezone, timedelta, datetime
 
 import requests
 
+import env as env
+
 
 class WebhookHandler(logging.Handler):
     def __init__(self, url):
@@ -14,7 +16,8 @@ class WebhookHandler(logging.Handler):
             "content": self.format(record),
             "username": "Bot Log",
         }
-        res = requests.post(url=self.url, json=data)
+        params = {"thread_id": env.LOGGING_CHANNEL_ID}
+        res = requests.post(url=self.url, json=data, params=params)
 
 
 class DatetimeFormatter(logging.Formatter):

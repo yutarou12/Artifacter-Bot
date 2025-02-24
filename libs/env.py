@@ -9,6 +9,7 @@ ON_READY_CHANNEL_ID: int = int(os.environ.get("ON_READY_CHANNEL_ID", ""))
 ON_INTERACTION_CHANNEL_ID: int = int(os.environ.get("ON_INTERACTION_CHANNEL_ID", ""))
 TRACEBACK_CHANNEL_ID: int = int(os.environ.get("TRACEBACK_CHANNEL_ID", ""))
 ERROR_CHANNEL_ID: int = int(os.environ.get("ERROR_CHANNEL_ID", ""))
+LOGGING_CHANNEL_ID: int = int(os.environ.get("LOGGING_CHANNEL_ID", ""))
 
 POSTGRESQL_HOST_NAME: str = os.environ.get("POSTGRESQL_HOST_NAME", "")
 POSTGRESQL_USER: str = os.environ.get("POSTGRESQL_USER", "")

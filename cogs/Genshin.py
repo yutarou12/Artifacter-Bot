@@ -26,7 +26,6 @@ async def error_message_send_ch(error_channel, interaction, error) -> None:
     embed_logs = Embed(title='Error Log')
     embed_logs.set_author(name=f'{interaction.user.display_name} ({interaction.user.id})',
                           icon_url=icon_convert(interaction.user.avatar))
-    embed_logs.add_field(name='Command', value=interaction.command.name, inline=False)
     embed_logs.add_field(name='Error', value=f'```{error}```', inline=False)
     if interaction.channel.type == discord.ChannelType.text:
         embed_logs.set_footer(

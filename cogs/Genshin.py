@@ -7,10 +7,11 @@ from PIL import Image
 from typing import Optional, Mapping
 
 import discord
-from discord import app_commands
+from discord import app_commands, Embed
 from discord.ext import commands
 
-from libs.Convert import fetch_character
+from libs import env
+from libs.Convert import fetch_character, icon_convert
 from libs.env import API_HOST_NAME
 
 
@@ -19,6 +20,21 @@ def cooldown_for_everyone_but_guild(interaction: discord.Interaction) -> Optiona
     if interaction.guild_id in guild_list:
         return None
     return app_commands.Cooldown(1, 60 * 1)
+
+
+async def error_message_send_ch(error_channel, interaction, error) -> None:
+    embed_logs = Embed(title='Error Log')
+    embed_logs.set_author(name=f'{interaction.user.display_name} ({interaction.user.id})',
+                          icon_url=icon_convert(interaction.user.avatar))
+    embed_logs.add_field(name='Command', value=interaction.command.name, inline=False)
+    embed_logs.add_field(name='Error', value=f'```{error}```', inline=False)
+    if interaction.channel.type == discord.ChannelType.text:
+        embed_logs.set_footer(
+            text=f'{interaction.channel.name} \nG:{interaction.guild_id} C:{interaction.channel_id}',
+            icon_url=icon_convert(interaction.guild.icon))
+    else:
+        embed_logs.set_footer(text=f"{interaction.user}'s DM_CHANNEL C:{interaction.channel_id}")
+    await error_channel.send(embed=embed_logs)
 
 
 user_party_cache: Mapping[int, dict] = {}
@@ -336,7 +352,11 @@ class BaseButton(discord.ui.Button):
                         image_data = await r.content.read()
                         img = Image.open(BytesIO(image_data))
                         img.save(f'./Tests/{self.uid}-Image.png')
+                    elif r.status == 404:
+                        return await interaction.followup.send('画像が生成されませんでした。何回も発生する場合は公式サーバーまでお問い合わせください。', ephemeral=True)
                     else:
+                        error_channel = await interaction.client.fetch_channel(env.ERROR_CHANNEL_ID)
+                        await error_message_send_ch(error_channel, interaction, await r.content.read())
                         return await interaction.followup.send('生成できませんでした。', ephemeral=True)
 
             if res["Score"]["total"] >= 220:

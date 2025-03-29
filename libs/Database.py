@@ -27,6 +27,8 @@ class ProductionDatabase:
                 "CREATE TABLE IF NOT EXISTS user_data_cache (user_id bigint NOT NULL, user_cache text, PRIMARY KEY (user_id))")
             await conn.execute(
                 "CREATE TABLE IF NOT EXISTS cmd_log (user_id bigint, cmd_name text, ch_id bigint, cmd_date timestamp)")
+            await conn.execute(
+                "CREATE TABLE IF NOT EXISTS buyer_user (user_id bigint NOT NULL, function_id bigint NOT NULL)")
 
         return self.pool
 
@@ -150,6 +152,23 @@ class ProductionDatabase:
         async with self.pool.acquire() as con:
             data = await con.fetch("SELECT * FROM cmd_log")
             return data
+
+    @check_connection
+    async def get_buyer_user_bool(self, user_id: int, function_id: int):
+        async with self.pool.acquire() as con:
+            data = await con.fetch("SELECT * FROM buyer_user WHERE user_id=$1 AND function_id=$2", user_id, function_id)
+            return bool(data)
+
+
+    @check_connection
+    async def add_buyer_user(self, user_id: int, function_id: int):
+        async with self.pool.acquire() as con:
+            await con.execute("INSERT INTO buyer_user (user_id, function_id)  VALUES ($1, $2)", user_id, function_id)
+
+    @check_connection
+    async def remove_buyer_user(self, user_id: int, function_id: int):
+        async with self.pool.acquire() as con:
+            await con.execute("DELETE FROM buyer_user WHERE user_id=$1 AND function_id=$2", user_id, function_id)
 
 
 class DebugDatabase(ProductionDatabase):

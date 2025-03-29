@@ -1,10 +1,12 @@
+import json
+
 import requests
 import math
 import aiohttp
 
 from io import BytesIO
 from PIL import Image
-from typing import Optional, Mapping
+from typing import Optional, Mapping, List
 
 import discord
 from discord import app_commands
@@ -19,6 +21,14 @@ def cooldown_for_everyone_but_guild(interaction: discord.Interaction) -> Optiona
     if interaction.guild_id in guild_list:
         return None
     return app_commands.Cooldown(1, 60 * 1)
+
+async def buyer_chara_autocomplete(self, interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
+    with open('./data/character.json', 'r', encoding='utf-8') as f:
+        chara_data = json.load(f)
+    return [
+        app_commands.Choice(name=fruit, value=fruit)
+        for fruit in fruits if current.lower() in fruit.lower()
+    ]
 
 
 user_party_cache: Mapping[int, dict] = {}
@@ -204,6 +214,19 @@ class Genshin(commands.Cog):
         if view_re:
             requests.get(f'http://{API_HOST_NAME}:8080/api/delete/{uid}')
             return await msg.edit(view=None)
+
+
+
+    @app_commands.command(name='build-original')
+    @app_commands.rename(uid_='uid')
+    @app_commands.autocomplete(character_name=app_commands.OptionType.STRING)
+    async def cmd_build_original(self, interaction: discord.Interaction, character_name: str = None, uid_: str = None ):
+        async def check_if_it_is_buyer() -> bool:
+            cmd_id_map = {"build-original": 1}
+            user_bool = await self.bot.db.get_buyer_user_bool(interaction.user.id, cmd_id_map.get(interaction.command.name))
+            return user_bool
+
+        if not await check_if_it_is_buyer():
 
     @cmd_build.error
     async def cmd_build_error(self, interaction, error):

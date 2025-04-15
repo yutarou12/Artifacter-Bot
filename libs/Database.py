@@ -27,6 +27,8 @@ class ProductionDatabase:
                 "CREATE TABLE IF NOT EXISTS user_data_cache (user_id bigint NOT NULL, user_cache text, PRIMARY KEY (user_id))")
             await conn.execute(
                 "CREATE TABLE IF NOT EXISTS cmd_log (user_id bigint, cmd_name text, ch_id bigint, cmd_date timestamp)")
+            await conn.execute(
+                "CREATE TABLE IF NOT EXISTS guild_settings (guild_id bigint NOT NULL PRIMARY KEY, setting_ephemeral bigint, setting_autoremove bigint, value_2 bigint, value_3 bigint, value_4 bigint)")
 
         return self.pool
 
@@ -150,6 +152,38 @@ class ProductionDatabase:
         async with self.pool.acquire() as con:
             data = await con.fetch("SELECT * FROM cmd_log")
             return data
+
+    @check_connection
+    async def get_all_guild_settings(self, guild_id: int):
+        async with self.pool.acquire() as con:
+            data = await con.fetch('SELECT * FROM guild_settings WHERE guild_id=$1', guild_id)
+            if data:
+                return data[0]
+            else:
+                return None
+
+    @check_connection
+    async def get_guild_setting(self, guild_id: int, setting_name: str):
+        async with self.pool.acquire() as con:
+            data = await con.fetch(f'SELECT {setting_name} FROM guild_settings WHERE guild_id=$1', guild_id)
+            if data:
+                return data[0]
+
+    @check_connection
+    async def set_guild_setting(self, guild_id: int, setting_dict: dict):
+        async with self.pool.acquire() as con:
+            data = await self.get_all_guild_settings(guild_id)
+            if data:
+                await con.execute('UPDATE guild_settings SET setting_ephemeral=$1, setting_autoremove=$2, value_2=$3, value_3=$4, value_4=$5 WHERE guild_id=$6',
+                                  setting_dict['setting_ephemeral'], setting_dict['setting_autoremove'], setting_dict['value_2'], setting_dict['value_3'], setting_dict['value_4'], guild_id)
+            else:
+                await con.execute('INSERT INTO guild_settings (guild_id, setting_ephemeral, setting_autoremove, value_2, value_3, value_4) VALUES ($1,$2,$3,$4,$5,$6)',
+                                  guild_id, setting_dict['setting_ephemeral'], setting_dict['setting_autoremove'], setting_dict['value_2'], setting_dict['value_3'], setting_dict['value_4'])
+
+    @check_connection
+    async def remove_guild_setting(self, guild_id: int):
+        async with self.pool.acquire() as con:
+            await con.execute('DELETE FROM guild_settings WHERE guild_id=$1', guild_id)
 
 
 class DebugDatabase(ProductionDatabase):

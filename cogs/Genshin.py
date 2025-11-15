@@ -36,6 +36,19 @@ async def error_message_send_ch(error_channel, interaction, error) -> None:
     await error_channel.send(embed=embed_logs)
 
 
+async def generate_error_send(uid, error, interaction) -> None:
+    ch = await interaction.client.fetch_channel(env.GENERATE_ERROR_CHANNEL_ID)
+
+    embed = Embed(title='Generation Error Log')
+    embed.set_author(name=f'{interaction.user.display_name} ({interaction.user.id})',
+                     icon_url=icon_convert(interaction.user.avatar))
+    embed.add_field(name='UID', value=f'`{uid}`', inline=False)
+    embed.add_field(name='User', value=f'`{interaction.user.id}`', inline=False)
+    embed.add_field(name='Error', value=f'```{error}```', inline=False)
+
+    await ch.send(embed=embed)
+
+
 user_party_cache: Mapping[int, dict] = {}
 
 
@@ -160,6 +173,7 @@ class Genshin(commands.Cog):
                 elif r.status == 404:
                     return await interaction.followup.send(content='データが見つかりませんでした。\nUIDを確認してください。')
                 else:
+                    await generate_error_send(uid, "Error in `/api/player`", interaction)
                     return await interaction.followup.send(content='何らかの問題でデータが取得できませんでした。')
 
         first_embed = discord.Embed(title=player["Name"])
@@ -268,6 +282,7 @@ class FirstSelect(discord.ui.Select):
                 if r.status == 200:
                     res = await r.json()
                 else:
+                    await generate_error_send(self.uid, "Error in `/api/converter`", interaction)
                     return await interaction.response.send_message(content='取得できませんでした', ephemeral=True)
 
         character = res["Character"]
@@ -367,10 +382,12 @@ class BaseButton(discord.ui.Button):
                         img = Image.open(BytesIO(image_data))
                         img.save(f'./Tests/{self.uid}-Image.png')
                     elif r.status == 404:
+                        await generate_error_send(self.uid, "Error in `/api/generation`\n\nStatus Code: 404", interaction)
                         return await interaction.followup.send('画像が生成されませんでした。何回も発生する場合は公式サーバーまでお問い合わせください。', ephemeral=True)
                     else:
                         error_channel = await interaction.client.fetch_channel(env.ERROR_CHANNEL_ID)
                         await error_message_send_ch(error_channel, interaction, await r.content.read())
+                        await generate_error_send(self.uid, f"Error in `/api/generation`\n\nStatus Code: {r.status}", interaction)
                         return await interaction.followup.send('生成できませんでした。', ephemeral=True)
 
             if res["Score"]["total"] >= 220:
@@ -497,10 +514,13 @@ class PartySubSelect(discord.ui.Select):
             await interaction.response.defer()
             result = await generate_image(u_p_c_l.get("Sub"), u_p_c_l.get("Main"), self.res_data, self.uid, u_p_c_l.get("方法"), interaction.user.id)
             if result == 1:
+                await generate_error_send(self.uid, "Error in Party Generation\n\nStatus: (Convert Error)", interaction)
                 return await interaction.followup.send("情報の正規化に失敗しました。(Convert Error)", ephemeral=True)
             elif result == 2:
+                await generate_error_send(self.uid, "Error in Party Generation\n\nStatus: (Artifact Error)", interaction)
                 return await interaction.followup.send("情報の標準化に失敗しました。(Artifact Error)", ephemeral=True)
             elif result == 3:
+                await generate_error_send(self.uid, "Error in Party Generation\n\nStatus: (Generation Error)", interaction)
                 return await interaction.followup.send("画像の生成に失敗しました。"
                                                        "エラーが多発する場合はサポートサーバーまでお問い合わせ下さい。(Generation Error)",
                                                        ephemeral=True)
@@ -544,13 +564,18 @@ class PartyTypeSelect(discord.ui.Select):
             await interaction.response.defer()
             result = await generate_image(u_p_c_l.get("Sub"), u_p_c_l.get("Main"), self.res_data, self.uid, u_p_c_l.get("方法"), interaction.user.id)
             if result == 1:
+                await generate_error_send(self.uid, "Error in Party Generation\n\nStatus: (Convert Error)", interaction)
                 return await interaction.followup.send("情報の正規化に失敗しました。(Convert Error)", ephemeral=True)
-            elif result == 2:
-                return await interaction.followup.send("情報の標準化に失敗しました。(Artifact Error)", ephemeral=True)
-            elif result == 3:
-                return await interaction.followup.send("画像の生成に失敗しました。エラーが多発する場合はサポートサーバーまでお問い合わせ下さい。(Generation Error)", ephemeral=True)
-            elif result == 4:
 
+            elif result == 2:
+                await generate_error_send(self.uid, "Error in Party Generation\n\nStatus: (Artifact Error)", interaction)
+                return await interaction.followup.send("情報の標準化に失敗しました。(Artifact Error)", ephemeral=True)
+
+            elif result == 3:
+                await generate_error_send(self.uid, "Error in Party Generation\n\nStatus: (Generation Error)", interaction)
+                return await interaction.followup.send("画像の生成に失敗しました。エラーが多発する場合はサポートサーバーまでお問い合わせ下さい。(Generation Error)", ephemeral=True)
+
+            elif result == 4:
                 file = discord.File(f'./Tests/{self.uid}-Party.png', filename='party-image.png')
 
                 embed = discord.Embed(title=f'パーティービルド',

@@ -176,33 +176,46 @@ class Genshin(commands.Cog):
         if player["NameCard"]:
             first_embed.set_image(url=f'https://enka.network/ui/{player["NameCard"]}.png')
 
-        view = BuildView()
+        chara_select_view = BuildView()
         if player["showAvatarInfo"]:
-            view_select = FirstSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
-            for i, chara in enumerate(player["showAvatarInfo"]):
-                name = fetch_character(str(chara["avatarId"]))
-                level = chara["level"]
-                view_select.add_option(label=name, description=f'Lv{level}', value=f'{i}')
-        else:
-            view_select = FirstSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
-            view_select.add_option(label='取得できません')
+            chara_select = FirstSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
 
-        view.add_item(view_select)
-        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ攻撃ㅤ',
-                                 user=interaction.user, custom_id='攻撃'))
-        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤHPㅤ',
-                                 user=interaction.user, custom_id='HP'))
-        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤチャージㅤ',
-                                 user=interaction.user, custom_id='チャージ'))
-        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ元素熟知ㅤ',
-                                 user=interaction.user, row=2, custom_id='元素熟知'))
-        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ防御ㅤ',
-                                 user=interaction.user, row=2, custom_id='防御'))
-        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='  会心  ',
-                                 user=interaction.user, row=2, custom_id='会心'))
-        view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.red, label='ㅤ終了ㅤ',
-                                 user=interaction.user, row=2, custom_id='終了'))
+            # キャラ選択セレクトメニュー作成
+            for i, chara in enumerate(player["showAvatarInfo"]):
+                energy_type = chara.get('energyType')
+                if str(chara.get("avatarId")) == "10000117":
+                    # ドール（男の子）
+                    avatar_id = f"10000117-70{energy_type}"
+                elif str(chara["avatarId"]) == "10000118":
+                    # ドール（女の子）
+                    avatar_id = f"10000118-80{energy_type}"
+                else:
+                    avatar_id = str(chara.get("avatarId"))
+
+                name = fetch_character(avatar_id)
+                level = chara.get("level")
+                chara_select.add_option(label=name, description=f'Lv{level}', value=f'{i}')
+        else:
+            chara_select = FirstSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
+            chara_select.add_option(label='取得できません')
+
+        chara_select_view.add_item(chara_select)
+        chara_select_view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ攻撃ㅤ',
+                                              user=interaction.user, custom_id='攻撃'))
+        chara_select_view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤHPㅤ',
+                                              user=interaction.user, custom_id='HP'))
+        chara_select_view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤチャージㅤ',
+                                              user=interaction.user, custom_id='チャージ'))
+        chara_select_view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ元素熟知ㅤ',
+                                              user=interaction.user, row=2, custom_id='元素熟知'))
+        chara_select_view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ防御ㅤ',
+                                              user=interaction.user, row=2, custom_id='防御'))
+        chara_select_view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='  会心  ',
+                                              user=interaction.user, row=2, custom_id='会心'))
+        chara_select_view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.red, label='ㅤ終了ㅤ',
+                                              user=interaction.user, row=2, custom_id='終了'))
         if img_data:
+            # プロフィール画像有
             async with aiohttp.ClientSession() as session:
                 async with session.post(f'http://{API_HOST_NAME}:8080/api/profile/get',
                                         json={"uid": uid}) as r:
@@ -212,11 +225,13 @@ class Genshin(commands.Cog):
             file = discord.File(f'./Tests/{uid}-Profile.png', filename='Profile.png')
             img_embed = discord.Embed()
             img_embed.set_image(url='attachment://Profile.png')
-            msg = await interaction.followup.send(embed=img_embed, file=file, view=view)
+            msg = await interaction.followup.send(embed=img_embed, file=file, view=chara_select_view)
         else:
-            msg = await interaction.followup.send(embed=first_embed, view=view)
-        view_re = await view.wait()
-        if view_re:
+            # プロフィール画像無
+            msg = await interaction.followup.send(embed=first_embed, view=chara_select_view)
+
+        chara_select_view_re = await chara_select_view.wait()
+        if chara_select_view_re:
             requests.get(f'http://{API_HOST_NAME}:8080/api/delete/{uid}')
             return await msg.edit(view=None)
 

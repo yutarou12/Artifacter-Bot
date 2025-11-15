@@ -11,7 +11,7 @@ from discord import app_commands, Embed
 from discord.ext import commands
 
 from libs import env
-from libs.Convert import fetch_character, icon_convert
+from libs.Convert import fetch_character, icon_convert, medal_emoji_str_convert, discord_emoji_str_convert
 from libs.env import API_HOST_NAME
 
 
@@ -23,6 +23,7 @@ def cooldown_for_everyone_but_guild(interaction: discord.Interaction) -> Optiona
 
 
 async def error_message_send_ch(error_channel, interaction, error) -> None:
+    # 画像生成時のエラーを検出・送信 - 1
     embed_logs = Embed(title='Error Log')
     embed_logs.set_author(name=f'{interaction.user.display_name} ({interaction.user.id})',
                           icon_url=icon_convert(interaction.user.avatar))
@@ -37,6 +38,7 @@ async def error_message_send_ch(error_channel, interaction, error) -> None:
 
 
 async def generate_error_send(uid, error, interaction) -> None:
+    # 画像生成時のエラーを検出・送信 - 2
     ch = await interaction.client.fetch_channel(env.GENERATE_ERROR_CHANNEL_ID)
 
     embed = Embed(title='Generation Error Log')
@@ -59,9 +61,11 @@ class Genshin(commands.Cog):
     @app_commands.command(name='uid')
     async def set_uid(self, interaction: discord.Interaction, uid: str = None):
         """UIDを登録/解除します。build時にUIDを入れなくて済むようになります。"""
-        if await self.bot.db.get_uid_from_user(interaction.user.id):
+        db_uid = await self.bot.db.get_uid_from_user(interaction.user.id)
+        if db_uid:
             embed = discord.Embed(title='UID登録解除画面',
                                   description=f'登録を解除しますか？')
+            embed.add_field(name='現在のUID', value=f'`{db_uid}`', inline=False)
         else:
             if not uid:
                 return await interaction.response.send_message('UIDを入れて下さい', ephemeral=True)
@@ -69,7 +73,7 @@ class Genshin(commands.Cog):
             embed = discord.Embed(title='UID登録画面',
                                   description=f'以下の内容で登録しますか？\n```\n{check_text}\n```')
 
-        view = CheckView()
+        view = UidCheckView()
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
         await view.wait()
         if view.value is None:
@@ -176,23 +180,39 @@ class Genshin(commands.Cog):
                     await generate_error_send(uid, "Error in `/api/player`", interaction)
                     return await interaction.followup.send(content='何らかの問題でデータが取得できませんでした。')
 
-        first_embed = discord.Embed(title=player["Name"])
-        if player["Signature"]:
-            first_embed.description = player["Signature"]
-        first_embed.add_field(name='深境螺旋', value=player["Tower"])
-        if player["Theater"].get("theaterActIndex"):
-            first_embed.add_field(name='幻想シアター', value=f'第{player["Theater"].get("theaterActIndex")}幕')
+        first_embed = discord.Embed(title=player.get("Name"))
+        # プロフィール文章
+        if player.get("Signature"):
+            first_embed.description = player.get("Signature")
+
+        # 深境螺旋
+        first_embed.add_field(name='深境螺旋', value=player.get("Tower"))
+
+        # 幻想シアター
+        if player("Theater").get("theaterActIndex"):
+            first_embed.add_field(name='幻想シアター', value=f'第{player.get("Theater").get("theaterActIndex")}幕 | {player.get("Theater").get("theaterStarIndex")} ')
         else:
             first_embed.add_field(name='幻想シアター', value='未記録')
-        first_embed.add_field(name='アチーブメント', value=player["Achievement"])
-        first_embed.set_footer(text=f'冒険ランク{player["Level"]}・世界ランク{player["worldLevel"]}')
-        first_embed.set_thumbnail(url=f'https://enka.network/ui/{player["ProfilePicture"]}.png')
-        if player["NameCard"]:
-            first_embed.set_image(url=f'https://enka.network/ui/{player["NameCard"]}.png')
 
-        chara_select_view = BuildView()
+        # 幽境の激戦
+        if player.get("Stygian").get("stygianIndex"):
+            first_embed.add_field(name='幽境の激戦', value=f'{player.get("Stygian").get("stygianSeconds")}s | {medal_emoji_str_convert(player.get("Stygian").get("stygianIndex"))} ')
+        else:
+            first_embed.add_field(name='幽境の激戦', value='未記録')
+
+        # アチーブメント
+        first_embed.add_field(name='アチーブメント', value=player.get("Achievement"))
+
+        first_embed.set_footer(text=f'冒険ランク{player.get("Level")}・世界ランク{player.get("worldLevel")}')
+        first_embed.set_thumbnail(url=f'https://enka.network/ui/{player.get("ProfilePicture")}.png')
+
+        if player["NameCard"]:
+            first_embed.set_image(url=f'https://enka.network/ui/{player.get("NameCard")}.png')
+
+        # cs_view = Character Select View
+        cs_view = BuildView()
         if player["showAvatarInfo"]:
-            chara_select = FirstSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
+            chara_select = FirstCharacterSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
 
             # キャラ選択セレクトメニュー作成
             for i, chara in enumerate(player["showAvatarInfo"]):
@@ -210,24 +230,24 @@ class Genshin(commands.Cog):
                 level = chara.get("level")
                 chara_select.add_option(label=name, description=f'Lv{level}', value=f'{i}')
         else:
-            chara_select = FirstSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
+            chara_select = FirstCharacterSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
             chara_select.add_option(label='取得できません')
 
-        chara_select_view.add_item(chara_select)
-        chara_select_view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ攻撃ㅤ',
-                                              user=interaction.user, custom_id='攻撃'))
-        chara_select_view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤHPㅤ',
-                                              user=interaction.user, custom_id='HP'))
-        chara_select_view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤチャージㅤ',
-                                              user=interaction.user, custom_id='チャージ'))
-        chara_select_view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ元素熟知ㅤ',
-                                              user=interaction.user, row=2, custom_id='元素熟知'))
-        chara_select_view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='ㅤ防御ㅤ',
-                                              user=interaction.user, row=2, custom_id='防御'))
-        chara_select_view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.green, label='  会心  ',
-                                              user=interaction.user, row=2, custom_id='会心'))
-        chara_select_view.add_item(BaseButton(uid=uid, player=player, style=discord.ButtonStyle.red, label='ㅤ終了ㅤ',
-                                              user=interaction.user, row=2, custom_id='終了'))
+        cs_view.add_item(chara_select)
+        cs_view.add_item(TypeSelectButton(uid=uid, player=player, style=discord.ButtonStyle.green,
+                                          label='ㅤ攻撃ㅤ', user=interaction.user, custom_id='攻撃'))
+        cs_view.add_item(TypeSelectButton(uid=uid, player=player, style=discord.ButtonStyle.green,
+                                          label='ㅤHPㅤ', user=interaction.user, custom_id='HP'))
+        cs_view.add_item(TypeSelectButton(uid=uid, player=player, style=discord.ButtonStyle.green,
+                                          label='ㅤチャージㅤ', user=interaction.user, custom_id='チャージ'))
+        cs_view.add_item(TypeSelectButton(uid=uid, player=player, style=discord.ButtonStyle.green,
+                                          label='ㅤ元素熟知ㅤ', user=interaction.user, row=2, custom_id='元素熟知'))
+        cs_view.add_item(TypeSelectButton(uid=uid, player=player, style=discord.ButtonStyle.green,
+                                          label='ㅤ防御ㅤ', user=interaction.user, row=2, custom_id='防御'))
+        cs_view.add_item(TypeSelectButton(uid=uid, player=player, style=discord.ButtonStyle.green,
+                                          label='  会心  ', user=interaction.user, row=2, custom_id='会心'))
+        cs_view.add_item(TypeSelectButton(uid=uid, player=player, style=discord.ButtonStyle.red,
+                                          label='ㅤ終了ㅤ', user=interaction.user, row=2, custom_id='終了'))
         if img_data:
             # プロフィール画像有
             async with aiohttp.ClientSession() as session:
@@ -239,13 +259,13 @@ class Genshin(commands.Cog):
             file = discord.File(f'./Tests/{uid}-Profile.png', filename='Profile.png')
             img_embed = discord.Embed()
             img_embed.set_image(url='attachment://Profile.png')
-            msg = await interaction.followup.send(embed=img_embed, file=file, view=chara_select_view)
+            msg = await interaction.followup.send(embed=img_embed, file=file, view=cs_view)
         else:
             # プロフィール画像無
-            msg = await interaction.followup.send(embed=first_embed, view=chara_select_view)
+            msg = await interaction.followup.send(embed=first_embed, view=cs_view)
 
-        chara_select_view_re = await chara_select_view.wait()
-        if chara_select_view_re:
+        cs_view_re = await cs_view.wait()
+        if cs_view_re:
             requests.get(f'http://{API_HOST_NAME}:8080/api/delete/{uid}')
             return await msg.edit(view=None)
 
@@ -259,7 +279,7 @@ class Genshin(commands.Cog):
             raise error
 
 
-class FirstSelect(discord.ui.Select):
+class FirstCharacterSelect(discord.ui.Select):
     def __init__(self, res_data, uid, player, user):
         self.res_data = res_data
         self.uid = uid
@@ -290,29 +310,11 @@ class FirstSelect(discord.ui.Select):
         set_bonus_text = ''
         for q, n in res['Score']['Bonus']:
             set_bonus_text += f'**{q}セット** `{n}`\n'
-        discord_icon_list_reversed = {
-            "HP": {"name": "A_PROP_HP", "id": 1330326300627566662},
-            "攻撃力": {"name": "A_PROP_ATTACK", "id": 1330326294327722089},
-            "防御力": {"name": "A_PROP_DEFENSE", "id": 1330326297985155164},
-            "会心率": {"name": "A_PROP_CRITICAL", "id": 1330326290838065263},
-            "会心ダメージ": {"name": "A_PROP_CRITICAL_HURT", "id": 1330326288514289748},
-            "元素チャージ効率": {"name": "A_PROP_CHARGE_EFFICIENCY", "id": 1330326304721080320},
-            "元素熟知": {"name": "A_PROP_ELEMENT_MASTERY", "id": 1330326296059711568},
-            "物理ダメージ": {"name": "A_PROP_PHYSICAL_HURT", "id": 1330374399991222417},
-            "炎元素ダメージ": {"name": "E_PROP_FIRE_HURT", "id": 1330373941403062282},
-            "雷元素ダメージ": {"name": "E_PROP_ELEC_HURT", "id": 1330373933114982430},
-            "水元素ダメージ": {"name": "E_PROP_WATER_HURT", "id": 1330373945010032660},
-            "風元素ダメージ": {"name": "E_PROP_WIND_HURT", "id": 1330373931424682137},
-            "氷元素ダメージ": {"name": "E_PROP_ICE_HURT", "id": 1330373948289978455},
-            "岩元素ダメージ": {"name": "E_PROP_ROCK_HURT", "id": 1330373943412129964},
-            "草元素ダメージ": {"name": "E_PROP_GRASS_HURT", "id": 1330373946616446976}
-            }
 
         status_text = list()
         raw_list = list()
         for k, v in character['Status'].items():
-            icon = discord_icon_list_reversed.get(k)
-            icon_str = f'<:{icon.get("name")}:{icon.get("id")}>'
+            icon_str = discord_emoji_str_convert(k)
             if k not in ['HP', '攻撃力', '防御力']:
                 status_text.append(f'{icon_str} **{k}**：{v}')
             else:
@@ -342,7 +344,7 @@ class FirstSelect(discord.ui.Select):
         await interaction.response.edit_message(embed=embed, attachments=[])
 
 
-class BaseButton(discord.ui.Button):
+class TypeSelectButton(discord.ui.Button):
     def __init__(self, uid, player, user, *args, **kwargs):
         self.chara_data = None
         self.player = player
@@ -425,7 +427,7 @@ class BuildView(discord.ui.View):
         self.value = None
 
 
-class CheckView(discord.ui.View):
+class UidCheckView(discord.ui.View):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.timeout = 120
@@ -439,7 +441,7 @@ class CheckView(discord.ui.View):
 
     @discord.ui.button(label='Cancel', style=discord.ButtonStyle.red)
     async def cancel_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message('キャンセルしました', ephemeral=True)
+        await interaction.response.edit_message(content='キャンセルしました', embed=None, view=None)
         self.value = False
         self.stop()
 

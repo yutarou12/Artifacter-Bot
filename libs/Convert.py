@@ -24,3 +24,38 @@ def icon_convert(icon: Optional[Asset]) -> str:
         return 'https://cdn.discordapp.com/embed/avatars/0.png'
     else:
         return icon.replace(format='png').url
+
+
+def medal_emoji_str_convert(medal_id: int) -> str:
+    medal_dict = {
+        1: '<:LeyLineChallenge_Medal_1:1439224311830544504>',
+        2: '<:LeyLineChallenge_Medal_2:1439224308462391468>',
+        3: '<:LeyLineChallenge_Medal_3:1439224306302455919>',
+        4: '<:LeyLineChallenge_Medal_4:1439224303227769066>',
+        5: '<:LeyLineChallenge_Medal_5:1439224299507421214>',
+        6: '<:LeyLineChallenge_Medal_6:1439224290603044956>',
+        7: '<:LeyLineChallenge_Medal_7:1439224287562043462>',
+    }
+    return medal_dict.get(medal_id)
+
+
+def discord_emoji_str_convert(name: str) -> str:
+    icon_dict = {
+        "HP": "<:A_PROP_HP:1330326300627566662>",
+        "攻撃力": "<:A_PROP_ATTACK:1330326294327722089>",
+        "防御力": "<:A_PROP_DEFENSE:1330326297985155164>",
+        "会心率": "<:A_PROP_CRITICAL:1330326290838065263>",
+        "会心ダメージ": "<:A_PROP_CRITICAL_HURT:1330326288514289748>",
+        "元素チャージ効率": "<:A_PROP_CHARGE_EFFICIENCY:1330326304721080320>",
+        "元素熟知": "<:A_PROP_ELEMENT_MASTERY:1330326296059711568>",
+        "物理ダメージ": "<:A_PROP_PHYSICAL_HURT:1330374399991222417>",
+        "炎元素ダメージ": "<:E_PROP_FIRE_HURT:1330373941403062282>",
+        "雷元素ダメージ": "<:E_PROP_ELEC_HURT:1330373933114982430>",
+        "水元素ダメージ": "<:E_PROP_WATER_HURT:1330373945010032660>",
+        "風元素ダメージ": "<:E_PROP_WIND_HURT:1330373931424682137>",
+        "氷元素ダメージ": "<:E_PROP_ICE_HURT:1330373948289978455>",
+        "岩元素ダメージ": "<:E_PROP_ROCK_HURT:1330373943412129964>",
+        "草元素ダメージ": "<:E_PROP_GRASS_HURT:1330373946616446976>"
+    }
+
+    return icon_dict.get(name)

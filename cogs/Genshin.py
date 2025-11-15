@@ -189,7 +189,7 @@ class Genshin(commands.Cog):
         first_embed.add_field(name='深境螺旋', value=player.get("Tower"))
 
         # 幻想シアター
-        if player("Theater").get("theaterActIndex"):
+        if player.get("Theater").get("theaterActIndex"):
             first_embed.add_field(name='幻想シアター', value=f'第{player.get("Theater").get("theaterActIndex")}幕 | {player.get("Theater").get("theaterStarIndex")} ')
         else:
             first_embed.add_field(name='幻想シアター', value='未記録')

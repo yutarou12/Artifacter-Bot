@@ -160,9 +160,17 @@ class Genshin(commands.Cog):
         if not uid:
             return await interaction.response.send_message('UIDを入れて下さい', ephemeral=True)
 
+        if interaction.guild:
+            ephemeral_mode = await self.bot.db.is_ephemeral_mode_guild(interaction.guild.id)
+        else:
+            ephemeral_mode = False
+
         uid = ''.join(str(uid).split())
 
-        await interaction.response.defer()
+        if ephemeral_mode:
+            await interaction.response.defer(ephemeral=True)
+        else:
+            await interaction.response.defer()
 
         user_premium_bool = await self.bot.db.get_premium_user_bool(interaction.user.id)
 
@@ -174,13 +182,19 @@ class Genshin(commands.Cog):
                     player = j.get("Player")
                     all_data = j.get("AllData")
                     img_data = j.get("Img")
+                    msg = None
                 elif r.status == 424:
-                    return await interaction.followup.send(content='現在APIがメンテナンス中です。\n復旧までしばらくお待ちください。')
+                    msg = '現在APIがメンテナンス中です。\n復旧までしばらくお待ちください。'
                 elif r.status == 404:
-                    return await interaction.followup.send(content='データが見つかりませんでした。\nUIDを確認してください。')
+                    msg = 'データが見つかりませんでした。\nUIDを確認してください。'
                 else:
                     await generate_error_send(uid, "Error in `/api/player`", interaction)
-                    return await interaction.followup.send(content='何らかの問題でデータが取得できませんでした。')
+                    msg = '何らかの問題でデータが取得できませんでした。'
+                if msg:
+                    if ephemeral_mode:
+                        return await interaction.followup.send(content=msg, ephemeral=True)
+                    else:
+                        return await interaction.followup.send(content=msg)
 
         first_embed = discord.Embed(title=player.get("Name"))
         # プロフィール文章
@@ -252,15 +266,25 @@ class Genshin(commands.Cog):
             file = discord.File(f'./Tests/{uid}-Profile.png', filename='Profile.png')
             img_embed = discord.Embed()
             img_embed.set_image(url='attachment://Profile.png')
-            msg = await interaction.followup.send(embed=img_embed, file=file, view=cs_view)
+
+            if ephemeral_mode:
+                msg = await interaction.followup.send(embed=img_embed, file=file, view=cs_view, ephemeral=True)
+            else:
+                msg = await interaction.followup.send(embed=img_embed, file=file, view=cs_view)
         else:
             # プロフィール画像無
-            msg = await interaction.followup.send(embed=first_embed, view=cs_view)
+            if ephemeral_mode:
+                msg = await interaction.followup.send(embed=first_embed, view=cs_view, ephemeral=True)
+            else:
+                msg = await interaction.followup.send(embed=first_embed, view=cs_view)
 
         cs_view_re = await cs_view.wait()
         if cs_view_re:
             requests.get(f'http://{API_HOST_NAME}:8080/api/delete/{uid}')
-            return await msg.edit(view=None)
+            try:
+                return await msg.edit(view=None)
+            except discord.NotFound:
+                return
 
     @cmd_build.error
     async def cmd_build_error(self, interaction, error):

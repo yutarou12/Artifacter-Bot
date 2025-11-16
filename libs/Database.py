@@ -27,6 +27,8 @@ class ProductionDatabase:
                 "CREATE TABLE IF NOT EXISTS user_data_cache (user_id bigint NOT NULL, user_cache text, PRIMARY KEY (user_id))")
             await conn.execute(
                 "CREATE TABLE IF NOT EXISTS cmd_log (user_id bigint, cmd_name text, ch_id bigint, cmd_date timestamp)")
+            await conn.execute(
+                "CREATE TABLE IF NOT EXISTS ephemeral_mode_guild (guild_id bigint NOT NULL, PRIMARY KEY (guild_id))")
 
         return self.pool
 
@@ -151,6 +153,29 @@ class ProductionDatabase:
             data = await con.fetch("SELECT * FROM cmd_log")
             return data
 
+    @check_connection
+    async def get_ephemeral_mode_guild_list(self):
+        async with self.pool.acquire() as con:
+            data = await con.fetch("SELECT guild_id FROM ephemeral_mode_guild")
+            result = [value['guild_id'] for value in data]
+            return result
+
+    @check_connection
+    async def add_ephemeral_mode_guild(self, guild_id: int):
+        async with self.pool.acquire() as con:
+            await con.execute("INSERT INTO ephemeral_mode_guild (guild_id)  VALUES ($1)", guild_id)
+
+    @check_connection
+    async def remove_ephemeral_mode_guild(self, guild_id: int):
+        async with self.pool.acquire() as con:
+            await con.execute("DELETE FROM ephemeral_mode_guild WHERE guild_id=$1", guild_id)
+
+    @check_connection
+    async def is_ephemeral_mode_guild(self, guild_id: int):
+        async with self.pool.acquire() as con:
+            data = await con.fetch("SELECT * FROM ephemeral_mode_guild WHERE guild_id=$1", guild_id)
+            return bool(data)
+
 
 class DebugDatabase(ProductionDatabase):
 
@@ -207,6 +232,18 @@ class DebugDatabase(ProductionDatabase):
 
     async def get_cmd_log(self):
         return []
+
+    async def get_ephemeral_mode_guild_list(self):
+        return []
+
+    async def add_ephemeral_mode_guild(self, guild_id: int):
+        pass
+
+    async def remove_ephemeral_mode_guild(self, guild_id: int):
+        pass
+
+    async def is_ephemeral_mode_guild(self, guild_id: int):
+        return False
 
 
 if env.DEBUG == 1:

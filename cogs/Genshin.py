@@ -113,21 +113,31 @@ class Genshin(commands.Cog):
                 else:
                     return await interaction.followup.send(content='何らかの問題でデータが取得できませんでした。')
 
-        first_embed = discord.Embed(title=player["Name"])
-        if player["Signature"]:
-            first_embed.description = player["Signature"]
-        first_embed.add_field(name='螺旋', value=player["Tower"])
-        first_embed.add_field(name='アチーブメント', value=player["Achievement"])
-        first_embed.set_footer(text=f'冒険ランク{player["Level"]}・世界ランク{player["worldLevel"]}')
-        first_embed.set_thumbnail(url=f'https://enka.network/ui/{player["ProfilePicture"]}.png')
-        if player["NameCard"]:
-            first_embed.set_image(url=f'https://enka.network/ui/{player["NameCard"]}.png')
+        first_embed = discord.Embed(title=player.get("Name"))
+        if player.get("Signature"):
+            first_embed.description = player.get("Signature")
+        first_embed.add_field(name='螺旋', value=player.get("Tower"))
+        first_embed.add_field(name='アチーブメント', value=player.get("Achievement"))
+        first_embed.set_footer(text=f'冒険ランク{player.get("Level")}・世界ランク{player.get("worldLevel")}')
+        first_embed.set_thumbnail(url=f'https://enka.network/ui/{player.get("ProfilePicture")}.png')
+        if player.get("NameCard"):
+            first_embed.set_image(url=f'https://enka.network/ui/{player.get("NameCard")}.png')
 
         view = BuildView()
-        if player["showAvatarInfo"]:
+        if player.get("showAvatarInfo"):
             view_select = PartyMainSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
-            for i, chara in enumerate(player["showAvatarInfo"]):
-                name = fetch_character(str(chara["avatarId"]))
+            for i, chara in enumerate(player.get("showAvatarInfo")):
+                energy_type = chara.get('energyType')
+                if str(chara.get("avatarId")) == "10000117":
+                    # ドール（男の子）
+                    avatar_id = f"10000117-70{energy_type}"
+                elif str(chara["avatarId"]) == "10000118":
+                    # ドール（女の子）
+                    avatar_id = f"10000118-80{energy_type}"
+                else:
+                    avatar_id = str(chara.get("avatarId"))
+
+                name = fetch_character(avatar_id)
                 level = chara["level"]
                 view_select.add_option(label=name, description=f'Lv{level}', value=f'{i}')
         else:

@@ -11,7 +11,7 @@ from discord import app_commands, Embed
 from discord.ext import commands
 
 from libs import env
-from libs.Convert import fetch_character, icon_convert, medal_emoji_str_convert, discord_emoji_str_convert
+from libs.Convert import fetch_character, icon_convert, medal_emoji_str_convert, discord_emoji_str_convert, convert_avatar_id
 from libs.env import API_HOST_NAME
 
 
@@ -127,18 +127,10 @@ class Genshin(commands.Cog):
         if player.get("showAvatarInfo"):
             view_select = PartyMainSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
             for i, chara in enumerate(player.get("showAvatarInfo")):
-                energy_type = chara.get('energyType')
-                if str(chara.get("avatarId")) == "10000117":
-                    # ドール（男の子）
-                    avatar_id = f"10000117-70{energy_type}"
-                elif str(chara["avatarId"]) == "10000118":
-                    # ドール（女の子）
-                    avatar_id = f"10000118-80{energy_type}"
-                else:
-                    avatar_id = str(chara.get("avatarId"))
-
+                avatar_id = convert_avatar_id(str(chara.get("avatarId")), chara.get('energyType'))
                 name = fetch_character(avatar_id)
                 level = chara["level"]
+
                 view_select.add_option(label=name, description=f'Lv{level}', value=f'{i}')
         else:
             view_select = PartyMainSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
@@ -226,16 +218,7 @@ class Genshin(commands.Cog):
 
             # キャラ選択セレクトメニュー作成
             for i, chara in enumerate(player["showAvatarInfo"]):
-                energy_type = chara.get('energyType')
-                if str(chara.get("avatarId")) == "10000117":
-                    # ドール（男の子）
-                    avatar_id = f"10000117-70{energy_type}"
-                elif str(chara["avatarId"]) == "10000118":
-                    # ドール（女の子）
-                    avatar_id = f"10000118-80{energy_type}"
-                else:
-                    avatar_id = str(chara.get("avatarId"))
-
+                avatar_id = convert_avatar_id(str(chara.get("avatarId")), chara.get('energyType'))
                 name = fetch_character(avatar_id)
                 level = chara.get("level")
                 chara_select.add_option(label=name, description=f'Lv{level}', value=f'{i}')
@@ -473,7 +456,8 @@ class PartyMainSelect(discord.ui.Select):
         for i, chara in enumerate(self.res_data.get("playerInfo").get("showAvatarInfoList")):
             if i == int(self.values[0]):
                 continue
-            name = fetch_character(str(chara["avatarId"]))
+            avatar_id = convert_avatar_id(str(chara.get("avatarId")), chara.get('energyType'))
+            name = fetch_character(avatar_id)
             level = chara["level"]
             party_sub_select.add_option(label=name, description=f'Lv{level}', value=f'{i}')
         end = EndButton(uid=self.uid, user=interaction.user, custom_id='終了', label='終了')
@@ -486,13 +470,16 @@ class PartyMainSelect(discord.ui.Select):
             view.remove_item(view.children[2])
             view.add_item(party_sub_select)
             view.add_item(end)
+
+        chara = self.res_data.get("playerInfo").get("showAvatarInfoList")[int(self.values[0])]
+        avatar_id = convert_avatar_id(str(chara.get("avatarId")), chara.get('energyType'))
+        name = fetch_character(avatar_id)
+
         embed = interaction.message.embeds[0]
         embed.description = ""
         embed.clear_fields()
         embed.set_image(url="")
-        embed.add_field(name="メインキャラクター",
-                        value=f'{fetch_character(self.res_data.get("playerInfo").get("showAvatarInfoList")[int(self.values[0])]["avatarId"])}',
-                        inline=False)
+        embed.add_field(name="メインキャラクター", value=f'{name}', inline=False)
         if user_party_cache.get(interaction.user.id):
             user_party_cache[interaction.user.id]["Main"] = int(self.values[0])
             user_party_cache[interaction.user.id]["Sub"] = []
@@ -548,9 +535,10 @@ class PartySubSelect(discord.ui.Select):
         else:
             embed = interaction.message.embeds[0]
             for v in self.values:
-                embed.add_field(name="サブキャラクター",
-                                value=f'・{fetch_character(self.res_data.get("playerInfo").get("showAvatarInfoList")[int(v)]["avatarId"])}',
-                                inline=False)
+                chara = self.res_data.get("playerInfo").get("showAvatarInfoList")[int(v)]
+                avatar_id = convert_avatar_id(str(chara.get("avatarId")), chara.get('energyType'))
+                name = fetch_character(avatar_id)
+                embed.add_field(name="サブキャラクター", value=f'・{name}', inline=False)
 
             await interaction.response.edit_message(embed=embed)
 

@@ -59,3 +59,16 @@ def discord_emoji_str_convert(name: str) -> str:
     }
 
     return icon_dict.get(name)
+
+
+def convert_avatar_id(avatar_id: str, energy_type) -> str:
+    if avatar_id == "10000117":
+        # ドール（男の子）
+        character_id = f"10000117-70{energy_type}"
+    elif avatar_id == "10000118":
+        # ドール（女の子）
+        character_id = f"10000118-80{energy_type}"
+    else:
+        character_id = avatar_id
+
+    return character_id

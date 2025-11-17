@@ -1,3 +1,5 @@
+import random
+
 import requests
 import math
 import aiohttp
@@ -118,6 +120,12 @@ class Genshin(commands.Cog):
             first_embed.description = player.get("Signature")
         first_embed.add_field(name='螺旋', value=player.get("Tower"))
         first_embed.add_field(name='アチーブメント', value=player.get("Achievement"))
+
+        # リンク
+        if random.randint(1, 3) == 1:
+            first_embed.add_field(name='Donate Link',
+                                  value='[stripe.com](https://donate.stripe.com/3cI6oG6lz19k44t2hfenS09)')
+
         first_embed.set_footer(text=f'冒険ランク{player.get("Level")}・世界ランク{player.get("worldLevel")}')
         first_embed.set_thumbnail(url=f'https://enka.network/ui/{player.get("ProfilePicture")}.png')
         if player.get("NameCard"):
@@ -218,6 +226,10 @@ class Genshin(commands.Cog):
 
         # アチーブメント
         first_embed.add_field(name='アチーブメント', value=player.get("Achievement"))
+
+        # リンク
+        if random.randint(1, 3) == 1:
+            first_embed.add_field(name='Donate Link', value='[stripe.com](https://donate.stripe.com/3cI6oG6lz19k44t2hfenS09)')
 
         first_embed.set_footer(text=f'冒険ランク{player.get("Level")}・世界ランク{player.get("worldLevel")}')
         first_embed.set_thumbnail(url=f'https://enka.network/ui/{player.get("ProfilePicture")}.png')

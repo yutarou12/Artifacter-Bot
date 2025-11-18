@@ -52,8 +52,21 @@ async def generate_error_send(uid, error, interaction) -> None:
 
     await ch.send(embed=embed)
 
+def is_me():
+    def predicate(interaction: discord.Interaction) -> bool:
+        try:
+            team = interaction.client.application.team
+            owner_id = team.owner.id
+        except AttributeError:
+            owner_id = interaction.client.application.owner.id
+
+        return interaction.user.id == owner_id
+    return app_commands.check(predicate)
+
 
 user_party_cache: Mapping[int, dict] = {}
+
+OWNER_GUILD_ID = discord.Object(env.OWNER_GUILD_ID)
 
 
 class Genshin(commands.Cog):

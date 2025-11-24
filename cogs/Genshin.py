@@ -204,6 +204,8 @@ class Genshin(commands.Cog):
                     all_data = j.get("AllData")
                     img_data = j.get("Img")
                     msg = None
+                elif r.status == 400:
+                    msg = 'UIDが不正です。\nゲーム画面右下に表示されている9桁の数字を入力してください。'
                 elif r.status == 424:
                     msg = '現在APIがメンテナンス中です。\n復旧までしばらくお待ちください。'
                 elif r.status == 404:

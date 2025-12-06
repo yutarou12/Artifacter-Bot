@@ -14,7 +14,7 @@ from discord.ext import commands
 
 from libs import env
 from libs.Convert import fetch_character, icon_convert, medal_emoji_str_convert, discord_emoji_str_convert, convert_avatar_id
-from libs.env import API_HOST_NAME
+from libs.env import API_HOST_NAME, OWNER_GUILD_ID
 
 
 def cooldown_for_everyone_but_guild(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
@@ -66,7 +66,7 @@ def is_me():
 
 user_party_cache: Mapping[int, dict] = {}
 
-OWNER_GUILD_ID = discord.Object(env.OWNER_GUILD_ID)
+OWNER_GUILD_ID = discord.Object(OWNER_GUILD_ID)
 
 
 class Genshin(commands.Cog):
@@ -247,10 +247,10 @@ class Genshin(commands.Cog):
             first_embed.add_field(name='Donate Link', value='[stripe.com](https://donate.stripe.com/3cI6oG6lz19k44t2hfenS09)')
 
         first_embed.set_footer(text=f'冒険ランク{player.get("Level")}・世界ランク{player.get("worldLevel")}')
-        first_embed.set_thumbnail(url=f'https://enka.network/ui/{player.get("ProfilePicture")}.png')
+        first_embed.set_thumbnail(url=f'https://enka.network{player.get("ProfilePicture")}')
 
         if player["NameCard"]:
-            first_embed.set_image(url=f'https://enka.network/ui/{player.get("NameCard")}.png')
+            first_embed.set_image(url=f'https://enka.network{player.get("NameCard")}')
 
         # cs_view = Character Select View
         cs_view = BuildView()
@@ -369,7 +369,7 @@ class FirstCharacterSelect(discord.ui.Select):
         embed = discord.Embed(description=f'{self.player["Name"]}・冒険ランク{self.player["Level"]}・世界ランク{self.player["worldLevel"]}',
                               color=discord.Color.from_str(character["Color"]))
         embed.set_author(name=f'{character["Name"]}のステータス',
-                         icon_url=f'https://enka.network/ui/{character["SideIconName"]}.png')
+                         icon_url=f'https://enka.network{character["SideIconName"]}')
 
         if weapon:
             value_text = f'**基礎攻撃力**：{weapon["BaseATK"]}'
@@ -456,7 +456,7 @@ class TypeSelectButton(discord.ui.Button):
                                   description=f'{self.player["Name"]} | 冒険ランク{self.player["Level"]} | 世界ランク{self.player["worldLevel"]}',
                                   color=discord.Color.from_str(character["Color"]))
             embed.set_author(name=f'{character["Name"]}のステータス',
-                             icon_url=f'https://enka.network/ui/{character["SideIconName"]}.png')
+                             icon_url=f'https://enka.network/{character["SideIconName"]}')
             embed.add_field(name='セット効果', value=f'{set_bonus_text}')
             embed.set_footer(text=f'Lv.{character["Level"]} ・ 好感度{character["Love"]} ・ '
                                   f'スコア:{res["Score"]["total"]}/{res["Score"]["State"]}換算')

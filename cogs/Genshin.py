@@ -142,7 +142,7 @@ class Genshin(commands.Cog):
         first_embed.set_footer(text=f'冒険ランク{player.get("Level")}・世界ランク{player.get("worldLevel")}')
         first_embed.set_thumbnail(url=f'https://enka.network/ui/{player.get("ProfilePicture")}.png')
         if player.get("NameCard"):
-            first_embed.set_image(url=f'https://enka.network/ui/{player.get("NameCard")}.png')
+            first_embed.set_image(url=f'https://enka.network{player.get("NameCard")}.png')
 
         view = BuildView()
         if player.get("showAvatarInfo"):
@@ -247,7 +247,7 @@ class Genshin(commands.Cog):
             first_embed.add_field(name='Donate Link', value='[stripe.com](https://donate.stripe.com/3cI6oG6lz19k44t2hfenS09)')
 
         first_embed.set_footer(text=f'冒険ランク{player.get("Level")}・世界ランク{player.get("worldLevel")}')
-        first_embed.set_thumbnail(url=f'https://enka.network{player.get("ProfilePicture")}')
+        first_embed.set_thumbnail(url=f'https://enka.network/ui/{player.get("ProfilePicture")}.png')
 
         if player["NameCard"]:
             first_embed.set_image(url=f'https://enka.network{player.get("NameCard")}')

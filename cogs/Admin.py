@@ -244,6 +244,8 @@ class Admin(commands.Cog):
             for data in artifact_data:
                 name_hash = str(data.get("nameTextMapHash"))
                 ja_name = ja_name_list.get(name_hash)
+                if ja_name is None:
+                    continue
                 artifact_list[n] = {}
                 artifact_list[n][ja_name] = {
                     "NameTextMapHash": name_hash,

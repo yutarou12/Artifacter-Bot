@@ -233,7 +233,7 @@ class Admin(commands.Cog):
         generate_data['Character']['Status']['会心ダメージ'] = 200.0
         generate_data['Character']['Status']['元素チャージ効率'] = 200.0
         generate_data['Character']['Status']['元素熟知'] = 500
-        generate_data['Character']['Status'][f'{element_ja.get(chara_base_data.get("Element"))}元素ダメージ'] = 0.0
+        generate_data['Character']['Status'][f'{element_ja.get(chara_base_data.get("Element"))}元素ダメージ'] = 200.0
 
         # キャラクターベース情報
         generate_data['Character']['Base'] = {
@@ -289,7 +289,7 @@ class Admin(commands.Cog):
         else:
             weapon_sub_op = None
 
-        generate_data['Weapon']['name'] = weapon_data.get("NameTextMapHash")
+        generate_data['Weapon']['name'] = weapon
         generate_data['Weapon']['Icon'] = weapon_data.get("Icon")
         generate_data['Weapon']['rarelity'] = weapon_data.get("Rarity")
         generate_data['Weapon']['Level'] = 90
@@ -334,9 +334,9 @@ class Admin(commands.Cog):
                     "SetId": data.get("setId"),
                 }
 
-        artifact_sub_data = [{"appendPropId": "会心率", "statValue":15}, {"appendPropId": "会心ダメージ", "statValue":20}, {"appendPropId": "攻撃パーセンテージ", "statValue":15}, {"appendPropId": "元素チャージ効率", "statValue":15}]
+        artifact_sub_data = [{"appendPropId": "会心率", "statValue": 10}, {"appendPropId": "会心ダメージ", "statValue":20}, {"appendPropId": "攻撃パーセンテージ", "statValue":20}, {"appendPropId": "元素チャージ効率", "statValue":20}]
         artifact_main_data = {
-            "EQUIP_BRACER": {"mainPropId": "HP", "statValue":4780},
+            "EQUIP_BRACER": {"mainPropId": "HP", "statValue": 4780},
             "EQUIP_NECKLACE": {"mainPropId": "攻撃力", "statValue": 311},
             "EQUIP_SHOES": {"mainPropId": "元素チャージ効率", "statValue": 46.6},
             "EQUIP_RING": {"mainPropId": "会心率", "statValue": 31.1},
@@ -347,7 +347,7 @@ class Admin(commands.Cog):
 
         generate_data['Artifacts']['flower'] = {}
         bracer_data = artifact_list.get('EQUIP_BRACER').get(artifact)
-        generate_data['Artifacts']['flower']['type'] = bracer_data.get("NameTextMapHash")
+        generate_data['Artifacts']['flower']['type'] = artifact
         generate_data['Artifacts']['flower']['icon'] = bracer_data.get("Icon").replace("Eff_", "")
         generate_data['Artifacts']['flower']['main'] = {}
         generate_data['Artifacts']['flower']['main']['option'] = artifact_main_data.get('EQUIP_BRACER')["mainPropId"]
@@ -366,7 +366,7 @@ class Admin(commands.Cog):
         # 羽
         generate_data['Artifacts']['wing'] = {}
         necklace_data = artifact_list.get('EQUIP_NECKLACE').get(artifact)
-        generate_data['Artifacts']['wing']['type'] = necklace_data.get("NameTextMapHash")
+        generate_data['Artifacts']['wing']['type'] = artifact
         generate_data['Artifacts']['wing']['icon'] = necklace_data.get("Icon").replace("Eff_", "")
         generate_data['Artifacts']['wing']['main'] = {}
         generate_data['Artifacts']['wing']['main']['option'] = artifact_main_data.get('EQUIP_NECKLACE').get("mainPropId")
@@ -385,7 +385,7 @@ class Admin(commands.Cog):
         # 時計
         generate_data['Artifacts']['clock'] = {}
         shoes_data = artifact_list.get('EQUIP_SHOES').get(artifact)
-        generate_data['Artifacts']['clock']['type'] = shoes_data.get("NameTextMapHash")
+        generate_data['Artifacts']['clock']['type'] = artifact
         generate_data['Artifacts']['clock']['icon'] = shoes_data.get("Icon").replace("Eff_", "")
         generate_data['Artifacts']['clock']['main'] = {}
         generate_data['Artifacts']['clock']['main']['option'] = artifact_main_data.get('EQUIP_SHOES').get("mainPropId")
@@ -404,7 +404,7 @@ class Admin(commands.Cog):
         # 杯
         generate_data['Artifacts']['cup'] = {}
         ring_data = artifact_list.get('EQUIP_RING').get(artifact)
-        generate_data['Artifacts']['cup']['type'] = ring_data.get("NameTextMapHash")
+        generate_data['Artifacts']['cup']['type'] = artifact
         generate_data['Artifacts']['cup']['icon'] = ring_data.get("Icon").replace("Eff_", "")
         generate_data['Artifacts']['cup']['main'] = {}
         generate_data['Artifacts']['cup']['main']['option'] = artifact_main_data.get('EQUIP_RING').get("mainPropId")
@@ -423,7 +423,7 @@ class Admin(commands.Cog):
         # 冠
         generate_data['Artifacts']['crown'] = {}
         dress_data = artifact_list.get('EQUIP_DRESS').get(artifact)
-        generate_data['Artifacts']['crown']['type'] = dress_data.get("NameTextMapHash")
+        generate_data['Artifacts']['crown']['type'] = artifact
         generate_data['Artifacts']['crown']['icon'] = dress_data.get("Icon").replace("Eff_", "")
         generate_data['Artifacts']['crown']['main'] = {}
         generate_data['Artifacts']['crown']['main']['option'] = artifact_main_data.get('EQUIP_DRESS').get("mainPropId")
@@ -448,8 +448,6 @@ class Admin(commands.Cog):
         generate_data['Score']['total'] = round(
             generate_data['Score']['flower'] + generate_data['Score']['wing'] + generate_data['Score']['clock'] + generate_data['Score']['cup'] +
             generate_data['Score']['crown'], 1)
-
-        artifacts_data = {'flower': artifact, 'wing': artifact, 'clock': artifact, 'cup': artifact, 'crown': artifact}
 
         atf_type = list()
         for _ in ['flower', "wing", "clock", "cup", "crown"]:

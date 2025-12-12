@@ -189,7 +189,7 @@ class Admin(commands.Cog):
         weapon_list = {}
 
         for data in weapon_data:
-            name_hash = str(data.get("NameTextMapHash"))
+            name_hash = str(data.get("nameTextMapHash"))
             ja_name = ja_name_list.get(name_hash)
             weapon_list[ja_name] = {
                 "NameTextMapHash": name_hash,

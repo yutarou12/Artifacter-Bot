@@ -120,31 +120,36 @@ def get_json():
         res = requests.get("https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/ExcelBinOutput/EquipAffixExcelConfigData.json")
         with open(f'./data/admin/EquipAffixExcelConfigData-{datetime.datetime.today().month}.json', 'w', encoding='utf-8') as f:
             json.dump(res.json(), f, ensure_ascii=False, indent=4)
-        os.remove(f'./data/admin/EquipAffixExcelConfigData-{get_last_month()}.json')
+        if os.path.exists(f'./data/admin/EquipAffixExcelConfigData-{get_last_month()}.json'):
+            os.remove(f'./data/admin/EquipAffixExcelConfigData-{get_last_month()}.json')
 
     if not os.path.exists(f'./data/admin/ReliquarySetExcelConfigData{datetime.datetime.today().month}.json'):
         res = requests.get("https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/ExcelBinOutput/ReliquarySetExcelConfigData.json")
         with open(f'./data/admin/ReliquarySetExcelConfigData-{datetime.datetime.today().month}.json', 'w', encoding='utf-8') as f:
             json.dump(res.json(), f, ensure_ascii=False, indent=4)
-        os.remove(f'./data/admin/ReliquarySetExcelConfigData-{get_last_month()}.json')
+        if os.path.exists(f'./data/admin/ReliquarySetExcelConfigData-{get_last_month()}.json'):
+            os.remove(f'./data/admin/ReliquarySetExcelConfigData-{get_last_month()}.json')
 
     if not os.path.exists(f'./data/admin/ReliquaryExcelConfigData-{datetime.datetime.today().month}.json'):
         res = requests.get("https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/ExcelBinOutput/ReliquaryExcelConfigData.json")
         with open(f'./data/admin/ReliquaryExcelConfigData-{datetime.datetime.today().month}.json', 'w', encoding='utf-8') as f:
             json.dump(res.json(), f, ensure_ascii=False, indent=4)
-        os.remove(f'./data/admin/ReliquaryExcelConfigData-{get_last_month()}.json')
+        if os.path.exists(f'./data/admin/ReliquaryExcelConfigData-{get_last_month()}.json'):
+            os.remove(f'./data/admin/ReliquaryExcelConfigData-{get_last_month()}.json')
 
     if not os.path.exists(f'./data/admin/TextMapJP-{datetime.datetime.today().month}.json'):
         res = requests.get("https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/TextMap/TextMapJP.json")
         with open(f'./data/admin/TextMapJP-{datetime.datetime.today().month}.json', 'w', encoding='utf-8') as f:
             json.dump(res.json(), f, ensure_ascii=False, indent=4)
-        os.remove(f'./data/admin/TextMapJP-{get_last_month()}.json')
+        if os.path.exists(f'./data/admin/TextMapJP-{get_last_month()}.json'):
+            os.remove(f'./data/admin/TextMapJP-{get_last_month()}.json')
 
     if not os.path.exists(f'./data/admin/WeaponExcelConfigData-{datetime.datetime.today().month}.json'):
         res = requests.get("https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/ExcelBinOutput/WeaponExcelConfigData.json")
         with open(f'./data/admin/WeaponExcelConfigData-{datetime.datetime.today().month}.json', 'w', encoding='utf-8') as f:
             json.dump(res.json(), f, ensure_ascii=False, indent=4)
-        os.remove(f'./data/admin/WeaponExcelConfigData-{get_last_month()}.json')
+        if os.path.exists(f'./data/admin/WeaponExcelConfigData-{get_last_month()}.json'):
+            os.remove(f'./data/admin/WeaponExcelConfigData-{get_last_month()}.json')
 
 
 class Admin(commands.Cog):

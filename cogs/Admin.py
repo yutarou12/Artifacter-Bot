@@ -252,7 +252,7 @@ class Admin(commands.Cog):
                     "SetId": data.get("setId"),
                 }
 
-        artifact_sub_data = {{"appendPropId": "会心率", "statValue":15}, {"appendPropId": "会心ダメージ", "statValue":20}, {"appendPropId": "攻撃パーセンテージ", "statValue":15}, {"appendPropId": "元素チャージ効率", "statValue":15}}
+        artifact_sub_data = [{"appendPropId": "会心率", "statValue":15}, {"appendPropId": "会心ダメージ", "statValue":20}, {"appendPropId": "攻撃パーセンテージ", "statValue":15}, {"appendPropId": "元素チャージ効率", "statValue":15}]
         artifact_main_data = {
             "EQUIP_BRACER": {"mainPropId": "HP", "statValue":4780},
             "EQUIP_NECKLACE": {"mainPropId": "攻撃力", "statValue": 311},

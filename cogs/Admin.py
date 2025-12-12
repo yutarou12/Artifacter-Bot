@@ -239,12 +239,14 @@ class Admin(commands.Cog):
         # 聖遺物情報
         res = requests.get('https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/ExcelBinOutput/ReliquaryExcelConfigData.json')
         artifact_data = res.json()
+        res = requests.get('https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/TextMap/TextMapJP.json')
+        artifact_ja_name_list = res.json()
         artifact_list = {}
         for n in ['EQUIP_BRACER', 'EQUIP_NECKLACE', 'EQUIP_SHOES', 'EQUIP_RING', 'EQUIP_DRESS']:
             artifact_list[n] = {}
             for data in artifact_data:
                 name_hash = str(data.get("nameTextMapHash"))
-                ja_name = ja_name_list.get(name_hash)
+                ja_name = artifact_ja_name_list.get(name_hash)
                 if ja_name is None:
                     continue
                 artifact_list[n][ja_name] = {

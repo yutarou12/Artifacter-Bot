@@ -144,6 +144,10 @@ class Admin(commands.Cog):
 
         chara_base_data = chara_all_list.get(avatar_id)
         generate_data = {}
+        generate_data['Character'] = {}
+        generate_data['Weapon'] = {}
+        generate_data['Artifacts'] = {}
+        generate_data['Score'] = {}
 
         # キャラクター情報
         generate_data['Character']['Id'] = avatar_id

@@ -10,6 +10,7 @@ import requests
 from PIL import Image
 from discord import Embed
 from discord.ext import commands
+from collections import Counter
 
 from libs.Convert import icon_convert
 from libs.env import API_HOST_NAME, GENERATE_ERROR_CHANNEL_ID, ERROR_CHANNEL_ID
@@ -447,6 +448,22 @@ class Admin(commands.Cog):
         generate_data['Score']['total'] = round(
             generate_data['Score']['flower'] + generate_data['Score']['wing'] + generate_data['Score']['clock'] + generate_data['Score']['cup'] +
             generate_data['Score']['crown'], 1)
+
+        artifacts_data = {'flower': artifact, 'wing': artifact, 'clock': artifact, 'cup': artifact, 'crown': artifact}
+
+        atf_type = list()
+        for _ in ['flower', "wing", "clock", "cup", "crown"]:
+            atf_type.append(artifact)
+
+        set_bounus = Counter([x for x in atf_type if atf_type.count(x) >= 2])
+        final_set_bounus = list()
+        for n, q in set_bounus.items():
+            if len(set_bounus) == 2:
+                final_set_bounus.append((q, n))
+            if len(set_bounus) == 1:
+                final_set_bounus.append((q, n))
+
+        generate_data['Score']['Bonus'] = final_set_bounus
 
         async with aiohttp.ClientSession() as session:
             data = {

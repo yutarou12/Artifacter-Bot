@@ -218,7 +218,7 @@ class Admin(commands.Cog):
         generate_data['Character']['Color'] = element_color.get(chara_base_data.get("Element"))
         generate_data['Character']['SideIconName'] = chara_base_data.get("SideIconName")
         generate_data['Character']['Costume'] = None
-        generate_data['Character']['Name'] = chara_base_data.get("NameTextMapHash")
+        generate_data['Character']['Name'] = ja_name_list.get(str(chara_base_data.get("NameTextMapHash")))
         generate_data['Character']['Const'] = 6
         generate_data['Character']['Level'] = 90
         generate_data['Character']['Love'] = 10

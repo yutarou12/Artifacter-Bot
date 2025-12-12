@@ -118,13 +118,13 @@ def get_last_month() -> int:
 def get_json():
     if not os.path.exists(f'./data/admin/EquipAffixExcelConfigData-{datetime.datetime.today().month}.json'):
         res = requests.get("https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/ExcelBinOutput/EquipAffixExcelConfigData.json")
-        with open(f'./data/EquipAffixExcelConfigData-{datetime.datetime.today().month}.json', 'w', encoding='utf-8') as f:
+        with open(f'./data/admin/EquipAffixExcelConfigData-{datetime.datetime.today().month}.json', 'w', encoding='utf-8') as f:
             json.dump(res.json(), f, ensure_ascii=False, indent=4)
-        os.remove(f'./data/EquipAffixExcelConfigData-{get_last_month()}.json')
+        os.remove(f'./data/admin/EquipAffixExcelConfigData-{get_last_month()}.json')
 
     if not os.path.exists(f'./data/admin/ReliquarySetExcelConfigData{datetime.datetime.today().month}.json'):
         res = requests.get("https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/ExcelBinOutput/ReliquarySetExcelConfigData.json")
-        with open(f'./data/ReliquarySetExcelConfigData-{datetime.datetime.today().month}.json', 'w', encoding='utf-8') as f:
+        with open(f'./data/admin/ReliquarySetExcelConfigData-{datetime.datetime.today().month}.json', 'w', encoding='utf-8') as f:
             json.dump(res.json(), f, ensure_ascii=False, indent=4)
         os.remove(f'./data/admin/ReliquarySetExcelConfigData-{get_last_month()}.json')
 

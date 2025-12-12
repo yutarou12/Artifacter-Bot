@@ -451,7 +451,7 @@ class Admin(commands.Cog):
         async with aiohttp.ClientSession() as session:
             data = {
                 "data": generate_data,
-                "uid": "admin-build",
+                "uid": 999999999,
             }
             async with session.post(f'http://{API_HOST_NAME}:8080/api/generation', json=data) as r:
                 if r.status == 200:

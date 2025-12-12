@@ -1,4 +1,6 @@
+import datetime
 import json
+import os
 import random
 from io import BytesIO
 
@@ -106,6 +108,45 @@ async def error_message_send_ch(error_channel, ctx: discord.ext.commands.Context
     await error_channel.send(embed=embed_logs)
 
 
+def get_last_month() -> int:
+    today = datetime.datetime.today()
+    first_day_of_current_month = today.replace(day=1)
+    last_day_of_last_month = first_day_of_current_month - datetime.timedelta(days=1)
+    return last_day_of_last_month.month
+
+
+def get_json():
+    if not os.path.exists(f'./data/admin/EquipAffixExcelConfigData-{datetime.datetime.today().month}.json'):
+        res = requests.get("https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/ExcelBinOutput/EquipAffixExcelConfigData.json")
+        with open(f'./data/EquipAffixExcelConfigData-{datetime.datetime.today().month}.json', 'w', encoding='utf-8') as f:
+            json.dump(res.json(), f, ensure_ascii=False, indent=4)
+        os.remove(f'./data/EquipAffixExcelConfigData-{get_last_month()}.json')
+
+    if not os.path.exists(f'./data/admin/ReliquarySetExcelConfigData{datetime.datetime.today().month}.json'):
+        res = requests.get("https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/ExcelBinOutput/ReliquarySetExcelConfigData.json")
+        with open(f'./data/ReliquarySetExcelConfigData-{datetime.datetime.today().month}.json', 'w', encoding='utf-8') as f:
+            json.dump(res.json(), f, ensure_ascii=False, indent=4)
+        os.remove(f'./data/admin/ReliquarySetExcelConfigData-{get_last_month()}.json')
+
+    if not os.path.exists(f'./data/admin/ReliquaryExcelConfigData-{datetime.datetime.today().month}.json'):
+        res = requests.get("https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/ExcelBinOutput/ReliquaryExcelConfigData.json")
+        with open(f'./data/admin/ReliquaryExcelConfigData-{datetime.datetime.today().month}.json', 'w', encoding='utf-8') as f:
+            json.dump(res.json(), f, ensure_ascii=False, indent=4)
+        os.remove(f'./data/admin/ReliquaryExcelConfigData-{get_last_month()}.json')
+
+    if not os.path.exists(f'./data/admin/TextMapJP-{datetime.datetime.today().month}.json'):
+        res = requests.get("https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/TextMap/TextMapJP.json")
+        with open(f'./data/admin/TextMapJP-{datetime.datetime.today().month}.json', 'w', encoding='utf-8') as f:
+            json.dump(res.json(), f, ensure_ascii=False, indent=4)
+        os.remove(f'./data/admin/TextMapJP-{get_last_month()}.json')
+
+    if not os.path.exists(f'./data/admin/WeaponExcelConfigData-{datetime.datetime.today().month}.json'):
+        res = requests.get("https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/ExcelBinOutput/WeaponExcelConfigData.json")
+        with open(f'./data/admin/WeaponExcelConfigData-{datetime.datetime.today().month}.json', 'w', encoding='utf-8') as f:
+            json.dump(res.json(), f, ensure_ascii=False, indent=4)
+        os.remove(f'./data/admin/WeaponExcelConfigData-{get_last_month()}.json')
+
+
 class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -114,6 +155,8 @@ class Admin(commands.Cog):
     @commands.is_owner()
     async def cmd_admin_build(self, ctx: commands.Context, character_name, artifact, weapon_=None, c_type='攻撃'):
         """任意のビルド画像を生成します。"""
+        get_json()
+
         with open('./data/characters.json', 'r', encoding='utf-8') as f:
             chara_all_list = json.load(f)
 
@@ -122,6 +165,21 @@ class Admin(commands.Cog):
 
         with open('./data/append_prop_name.json', 'r', encoding='utf-8') as f:
             append_prop_list = json.load(f)
+
+        with open(f'./data/admin/EquipAffixExcelConfigData-{datetime.datetime.today().month}.json', 'r', encoding='utf-8') as f:
+            equip_affix_data = json.load(f)
+
+        with open(f'./data/admin/ReliquarySetExcelConfigData-{datetime.datetime.today().month}.json', 'r', encoding='utf-8') as f:
+            reliquary_set_data = json.load(f)
+
+        with open(f'./data/admin/ReliquaryExcelConfigData-{datetime.datetime.today().month}.json', 'r', encoding='utf-8') as f:
+            artifact_data = json.load(f)
+
+        with open(f'./data/admin/TextMapJP-{datetime.datetime.today().month}.json', 'r', encoding='utf-8') as f:
+            artifact_ja_name_list = json.load(f)
+
+        with open(f'./data/admin/WeaponExcelConfigData-{datetime.datetime.today().month}.json', 'r', encoding='utf-8') as f:
+            weapon_data = json.load(f)
 
         chara_name_list = {}
 
@@ -184,13 +242,13 @@ class Admin(commands.Cog):
             "爆発": 10 + 3 if generate_data['Character']['Const'] >= 5 else 10,
         }
 
-        res = requests.get("https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/ExcelBinOutput/WeaponExcelConfigData.json")
-        weapon_data = res.json()
         weapon_list = {}
 
         for data in weapon_data:
             name_hash = str(data.get("nameTextMapHash"))
             ja_name = ja_name_list.get(name_hash)
+            if ja_name is None:
+                continue
             weapon_list[ja_name] = {
                 "NameTextMapHash": name_hash,
                 "WeaponType": data.get("weaponType"),
@@ -237,15 +295,29 @@ class Admin(commands.Cog):
         }
 
         # 聖遺物情報
-        res = requests.get('https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/ExcelBinOutput/ReliquaryExcelConfigData.json')
-        artifact_data = res.json()
-        res = requests.get('https://gitlab.com/Dimbreath/AnimeGameData/-/raw/master/TextMap/TextMapJP.json')
-        artifact_ja_name_list = res.json()
         artifact_list = {}
         for n in ['EQUIP_BRACER', 'EQUIP_NECKLACE', 'EQUIP_SHOES', 'EQUIP_RING', 'EQUIP_DRESS']:
             artifact_list[n] = {}
             for data in artifact_data:
-                name_hash = str(data.get("nameTextMapHash"))
+                if data.get("equipType") != n:
+                    continue
+                set_id = data.get("setId")
+                equip_affix_id = None
+                for d in reliquary_set_data:
+                    if d.get("setId") == set_id:
+                        equip_affix_id = d.get("equipAffixId")
+                        break
+                if equip_affix_id is None:
+                    continue
+
+                name_hash = None
+                for d in equip_affix_data:
+                    if d.get("id") == equip_affix_id:
+                        name_hash = str(d.get("nameTextMapHash"))
+                        break
+                if name_hash is None:
+                    continue
+
                 ja_name = artifact_ja_name_list.get(name_hash)
                 if ja_name is None:
                     continue

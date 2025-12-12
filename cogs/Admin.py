@@ -232,7 +232,7 @@ class Admin(commands.Cog):
         generate_data['Character']['Status']['会心ダメージ'] = 200.0
         generate_data['Character']['Status']['元素チャージ効率'] = 200.0
         generate_data['Character']['Status']['元素熟知'] = 500
-        generate_data['Character']['Status'][f'{element_ja.get(chara_base_data.get("Element"))}ダメージ'] = 0.0
+        generate_data['Character']['Status'][f'{element_ja.get(chara_base_data.get("Element"))}元素ダメージ'] = 0.0
 
         # キャラクターベース情報
         generate_data['Character']['Base'] = {

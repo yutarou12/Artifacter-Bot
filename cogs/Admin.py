@@ -241,12 +241,12 @@ class Admin(commands.Cog):
         artifact_data = res.json()
         artifact_list = {}
         for n in ['EQUIP_BRACER', 'EQUIP_NECKLACE', 'EQUIP_SHOES', 'EQUIP_RING', 'EQUIP_DRESS']:
+            artifact_list[n] = {}
             for data in artifact_data:
                 name_hash = str(data.get("nameTextMapHash"))
                 ja_name = ja_name_list.get(name_hash)
                 if ja_name is None:
                     continue
-                artifact_list[n] = {}
                 artifact_list[n][ja_name] = {
                     "NameTextMapHash": name_hash,
                     "Icon": data.get("icon"),

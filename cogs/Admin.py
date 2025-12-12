@@ -290,7 +290,7 @@ class Admin(commands.Cog):
 
         generate_data['Weapon']['name'] = weapon_data.get("NameTextMapHash")
         generate_data['Weapon']['Icon'] = weapon_data.get("Icon")
-        generate_data['Weapon']['Rarity'] = weapon_data.get("Rarity")
+        generate_data['Weapon']['rarelity'] = weapon_data.get("Rarity")
         generate_data['Weapon']['Level'] = 90
         generate_data['Weapon']['totu'] = 5
         generate_data['Weapon']['BaseATK'] = weapon_base_attack

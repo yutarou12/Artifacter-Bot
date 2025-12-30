@@ -29,6 +29,8 @@ class ProductionDatabase:
                 "CREATE TABLE IF NOT EXISTS cmd_log (user_id bigint, cmd_name text, ch_id bigint, cmd_date timestamp)")
             await conn.execute(
                 "CREATE TABLE IF NOT EXISTS ephemeral_mode_guild (guild_id bigint NOT NULL, PRIMARY KEY (guild_id))")
+            await conn.execute(
+                "CREATE TABLE IF NOT EXISTS rasen_character (user_id bigint NOT NULL PRIMARY KEY, character_data TEXT[] NOT NULL)")
 
         return self.pool
 
@@ -176,6 +178,20 @@ class ProductionDatabase:
             data = await con.fetch("SELECT * FROM ephemeral_mode_guild WHERE guild_id=$1", guild_id)
             return bool(data)
 
+    @check_connection
+    async def get_rasen_character(self, user_id: int):
+        async with self.pool.acquire() as con:
+            data = await con.fetch('SELECT * FROM rasen_character WHERE user_id=$1', user_id)
+            if data:
+                return data[0]
+            else:
+                return None
+
+    @check_connection
+    async def add_rasen_character(self, user_id: int, character_data):
+        pass
+
+
 
 class DebugDatabase(ProductionDatabase):
     def __init__(self):
@@ -259,6 +275,12 @@ class DebugDatabase(ProductionDatabase):
 
     async def is_ephemeral_mode_guild(self, guild_id: int):
         return False
+
+    async def get_rasen_character(self, user_id: int):
+        return None
+
+    async def add_rasen_character(self, user_id: int, character_data):
+        pass
 
 
 if env.DEBUG == 1:

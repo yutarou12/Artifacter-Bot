@@ -59,3 +59,21 @@ def discord_emoji_str_convert(name: str) -> str:
     }
 
     return icon_dict.get(name)
+
+
+def load_characters_by_element(json_path):
+    with open(json_path, encoding='utf-8', mode='r') as f:
+        data = json.load(f)
+    elements = {}
+    for cid, cdata in data.items():
+        element = cdata.get('Element')
+        if element == "None":
+            continue
+        if element not in elements:
+            elements[element] = []
+        elements[element].append({
+            'id': cid,
+            'name_hash': cdata.get('NameTextMapHash'),
+            'icon': cdata.get('SideIconName')
+        })
+    return elements

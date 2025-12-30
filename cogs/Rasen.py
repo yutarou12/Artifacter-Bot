@@ -1,6 +1,6 @@
 from discord import app_commands
 from discord.ext import commands
-from discord import ui, ButtonStyle, Colour, SelectOption
+from discord import ui, ButtonStyle, Colour, SelectOption, Interaction
 
 from libs.Convert import load_characters_by_element, fetch_character, traveler_or_other_name
 from libs.Database import Database
@@ -157,7 +157,39 @@ class CharacterDeleteButton(ui.Button):
         super().__init__(label='②', style=ButtonStyle.green)
 
     async def callback(self, interaction: commands.Context):
-        await interaction.response.send_message("保有キャラクターの設定ボタンが押されました！", ephemeral=True)
+        view = CharacterDeleteView()
+        await interaction.response.send_message(view=view)
+
+
+class CharacterDeleteSubmitButton(ui.Button):
+    def __init__(self):
+        super().__init__(label='削除する', style=ButtonStyle.red)
+
+    async def callback(self, interaction: Interaction):
+        user_id = interaction.user.id
+        await interaction.client.db.delete_rasen_character(user_id)
+        return await interaction.response.edit_message("> 保有キャラクターのデータを削除しました。", view=None)
+
+
+class CharacterDeleteView(ui.LayoutView):
+    row = ui.ActionRow()
+    row.add_item(CharacterDeleteSubmitButton())
+    row.add_item(BackToSettingButton())
+
+    def __init__(self):
+        super().__init__()
+
+        container = ui.Container(
+            ui.TextDisplay(content="# 保有キャラクター削除"),
+            ui.TextDisplay(content='保有キャラクターのデータを削除します。\n以下のボタンを押すと、保有キャラクターのデータが完全に削除されます。'),
+            ui.Separator(),
+            ui.TextDisplay(content='### ⚠ 注意: この操作は取り消せません'),
+            ui.Separator(),
+            accent_color=Colour.red(),
+        )
+        self.add_item(container)
+        self.remove_item(self.row)
+        self.add_item(self.row)
 
 
 class CharacterSaveButton(ui.Button):

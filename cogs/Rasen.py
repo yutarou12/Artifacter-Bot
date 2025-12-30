@@ -87,7 +87,7 @@ class CharacterSettingView(ui.LayoutView):
     def __init__(self, json_path):
         super().__init__()
         self.elements = load_characters_by_element(json_path)
-        self.selects = {"Ice":[], "Fire":[], "Water":[], "Wind":[], "Grass":[], "Electric":[], "Rock":[]}
+        self.selects = {"Ice": [], "Fire": [], "Water": [], "Wind": [], "Grass": [], "Electric": [], "Rock": []}
         for element, chars in self.elements.items():
             # 25個ずつ分割
             for i in range(0, len(chars), 25):
@@ -150,22 +150,22 @@ class CharacterSaveButton(ui.Button):
 class SettingView(ui.LayoutView):
 
     container = ui.Container(
-        ui.TextDisplay(content="螺旋編成生成-設定"),
+        ui.TextDisplay(content="# 螺旋編成生成-設定"),
         ui.Section(
             ui.TextDisplay(content='螺旋編成をランダムに生成する際の設定を行います。\n以下の各項目から設定を行ってください。'),
             accessory=ui.Thumbnail(media='https://dev.syutarou.xyz/static/img/profile.png')
         ),
         ui.Separator(),
         ui.Section(
-            ui.TextDisplay(content='①保有キャラクターの設定'),
+            ui.TextDisplay(content='① 保有キャラクターの設定'),
             accessory=CharacterSettingButton()
         ),
         ui.Section(
-            ui.TextDisplay(content='②保有キャラクターの削除'),
+            ui.TextDisplay(content='② 保有キャラクターの削除'),
             accessory=CharacterDeleteButton()
         ),
         ui.Section(
-            ui.TextDisplay(content='③螺旋編成の保存'),
+            ui.TextDisplay(content='③ 螺旋編成の保存'),
             accessory=CharacterSaveButton()
         ),
         accent_color=Colour.green(),

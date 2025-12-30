@@ -6,6 +6,15 @@ from libs.Convert import load_characters_by_element, fetch_character, traveler_o
 from libs.Database import Database
 
 
+class BackToSettingButton(ui.Button):
+    def __init__(self):
+        super().__init__(label='最初に戻る', style=ButtonStyle.gray)
+
+    async def callback(self, interaction: commands.Context):
+        setting_view = SettingView()
+        await interaction.response.edit_message(view=setting_view)
+
+
 class Rasen(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -90,15 +99,6 @@ class CharacterElementSelect(ui.Select):
 
         await interaction.client.db.add_rasen_character(user_id, selected_ids)
         await interaction.response.send_message(f"属性キャラを保存しました: {selected_ids}", ephemeral=True)
-
-
-class BackToSettingButton(ui.Button):
-    def __init__(self):
-        super().__init__(label='最初に戻る', style=ButtonStyle.gray)
-
-    async def callback(self, interaction: commands.Context):
-        setting_view = SettingView()
-        await interaction.response.edit_message(view=setting_view)
 
 
 class CharacterSettingView(ui.LayoutView):

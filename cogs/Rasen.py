@@ -35,7 +35,7 @@ class CharacterSettingButton(ui.Button):
 
     async def callback(self, interaction: commands.Context):
         view = CharacterSettingView('./data/characters.json')
-        await interaction.response.send_message(view=view)
+        await interaction.response.edit_message(view=view)
 
 
 class CharacterElementActionRow(ui.ActionRow):
@@ -71,7 +71,19 @@ class CharacterElementSelect(ui.Select):
         await interaction.response.send_message(f"属性キャラを保存しました: {selected_ids}", ephemeral=True)
 
 
+class BackToSettingButton(ui.Button):
+    def __init__(self):
+        super().__init__(label='最初に戻る', style=ButtonStyle.gray)
+
+    async def callback(self, interaction: commands.Context):
+        setting_view = SettingView()
+        await interaction.response.edit_message(view=setting_view)
+
+
 class CharacterSettingView(ui.LayoutView):
+    row = ui.ActionRow()
+    row.add_item(BackToSettingButton())
+
     def __init__(self, json_path):
         super().__init__()
         self.elements = load_characters_by_element(json_path)
@@ -114,6 +126,9 @@ class CharacterSettingView(ui.LayoutView):
 
         )
         self.add_item(container)
+
+        self.remove_item(self.row)
+        self.add_item(self.row)
 
 
 class CharacterDeleteButton(ui.Button):

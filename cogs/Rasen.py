@@ -2,7 +2,7 @@ from discord import app_commands
 from discord.ext import commands
 from discord import ui, ButtonStyle, Colour, SelectOption
 
-from libs.Convert import load_characters_by_element
+from libs.Convert import load_characters_by_element, fetch_character, traveler_or_other_name
 from libs.Database import Database
 
 
@@ -33,8 +33,9 @@ class CharacterSettingButton(ui.Button):
     def __init__(self):
         super().__init__(label='①', style=ButtonStyle.green)
 
-    async def callback(self, interaction: commands.Context):
-        view = CharacterSettingView('./data/characters.json')
+    async def callback(self, interaction: Interaction):
+        data = await interaction.client.db.get_rasen_character(interaction.user.id)
+        view = CharacterSettingView('./data/characters.json', data)
         await interaction.response.edit_message(view=view)
 
 
@@ -45,13 +46,14 @@ class CharacterElementActionRow(ui.ActionRow):
 
 
 class CharacterElementSelect(ui.Select):
-    def __init__(self, e, i, characters):
+    def __init__(self, e, i, characters, data):
         options = [
             SelectOption(
-                label=char['id'],
+                label=traveler_or_other_name(fetch_character(char['id']), char['icon']) if fetch_character(char['id']) else char['id'],
                 value=char['id'],
                 description=f"NameHash: {char['name_hash']}",
-                emoji=None  # 必要ならアイコンをemojiに変換
+                emoji=None,  # 必要ならアイコンをemojiに変換
+                default=True if char['id'] in data else False
             )
             for char in characters
         ]
@@ -66,7 +68,26 @@ class CharacterElementSelect(ui.Select):
     async def callback(self, interaction):
         user_id = interaction.user.id
         selected_ids = self.values
+        element_from_custom_id = self.custom_id.split('_')[1]
         # DB保存
+        element_chara = load_characters_by_element("./data/characters.json")
+
+        # DBに保存されているキャラクターを取得して辞書形式に変換
+        db_chara = await interaction.client.db.get_rasen_character(user_id)
+        db_raw_chara = {"Ice": [], "Fire": [], "Water": [], "Wind": [], "Grass": [], "Electric": [], "Rock": []}
+
+        for db_id in db_chara:
+            for element, chars in element_chara.items():
+                if any(char['id'] == db_id for char in chars):
+                    db_raw_chara[element].append(db_id)
+
+        # 選択されたキャラクターで上書き
+        db_raw_chara[element_from_custom_id] = selected_ids
+        # フラットなリストに変換
+        selected_ids = []
+        for chara_list in db_raw_chara.values():
+            selected_ids.extend(chara_list)
+
         await interaction.client.db.add_rasen_character(user_id, selected_ids)
         await interaction.response.send_message(f"属性キャラを保存しました: {selected_ids}", ephemeral=True)
 
@@ -84,7 +105,7 @@ class CharacterSettingView(ui.LayoutView):
     row = ui.ActionRow()
     row.add_item(BackToSettingButton())
 
-    def __init__(self, json_path):
+    def __init__(self, json_path, data):
         super().__init__()
         self.elements = load_characters_by_element(json_path)
         self.selects = {"Ice": [], "Fire": [], "Water": [], "Wind": [], "Grass": [], "Electric": [], "Rock": []}
@@ -92,7 +113,7 @@ class CharacterSettingView(ui.LayoutView):
             # 25個ずつ分割
             for i in range(0, len(chars), 25):
                 chunk = chars[i:i + 25]
-                self.selects[element].append(CharacterElementActionRow(CharacterElementSelect(element, i, chunk)))
+                self.selects[element].append(CharacterElementActionRow(CharacterElementSelect(element, i, chunk, data)))
 
         container = ui.Container(
             ui.TextDisplay(content="# 保有キャラクター設定"),

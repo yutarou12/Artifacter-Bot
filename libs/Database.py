@@ -181,16 +181,28 @@ class ProductionDatabase:
     @check_connection
     async def get_rasen_character(self, user_id: int):
         async with self.pool.acquire() as con:
-            data = await con.fetch('SELECT * FROM rasen_character WHERE user_id=$1', user_id)
+            # data = await con.fetch("SELECT ARRAY_TO_STRING(ARRAY_AGG(unnested_value ORDER BY ordinality), ',') FROM rasen_character, UNNEST(character_data)  WITH ORDINALITY AS u(unnested_value, ordinality) WHERE user_id = $1;", user_id)
+            data = await con.fetchval("SELECT array_to_string(character_data, ',') FROM rasen_character WHERE user_id = $1", user_id)
             if data:
-                return data[0]
+                # dataの例：10000021,10000016,10000023
+                return data.split(',')
             else:
-                return None
+                return []
 
     @check_connection
-    async def add_rasen_character(self, user_id: int, character_data):
-        pass
+    async def add_rasen_character(self, user_id: int, character_data: list[str]):
+        db_data = await self.get_rasen_character(user_id)
+        if not db_data:
+            async with self.pool.acquire() as con:
+                await con.execute("INSERT INTO rasen_character (user_id, character_data)  VALUES ($1, $2)", user_id, character_data)
+        else:
+            async with self.pool.acquire() as con:
+                await con.execute("UPDATE rasen_character SET character_data=$1 WHERE user_id=$2", character_data, user_id)
 
+    @check_connection
+    async def remove_rasen_character(self, user_id: int):
+        async with self.pool.acquire() as con:
+            await con.execute("DELETE FROM rasen_character WHERE user_id=$1", user_id)
 
 
 class DebugDatabase(ProductionDatabase):
@@ -277,9 +289,12 @@ class DebugDatabase(ProductionDatabase):
         return False
 
     async def get_rasen_character(self, user_id: int):
-        return None
+        return []
 
     async def add_rasen_character(self, user_id: int, character_data):
+        pass
+
+    async def remove_rasen_character(self, user_id: int):
         pass
 
 

@@ -178,6 +178,12 @@ class ProductionDatabase:
 
 
 class DebugDatabase(ProductionDatabase):
+    def __init__(self):
+        super().__init__()
+        self.pool = None
+
+    async def setup(self):
+        pass
 
     async def execute(self, sql):
         logging.info(f"executing sql: {sql}")
@@ -204,6 +210,15 @@ class DebugDatabase(ProductionDatabase):
         pass
 
     async def remove_premium_guid(self, guild_id: int):
+        pass
+
+    async def get_premium_guild_list(self):
+        return []
+
+    async def add_premium_guild(self, guild_id: int):
+        pass
+
+    async def remove_premium_guild(self, guild_id: int):
         pass
 
     async def get_user_cache(self, user_id: int):

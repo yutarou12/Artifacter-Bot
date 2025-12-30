@@ -77,3 +77,13 @@ def load_characters_by_element(json_path):
             'icon': cdata.get('SideIconName')
         })
     return elements
+
+
+def traveler_or_other_name(name: str, icon: str):
+    if name == "旅人":
+        if icon.split('_')[-1].split('.')[0] == 'PlayerBoy':
+            return '空'
+        else:
+            return '蛍'
+    else:
+        return name

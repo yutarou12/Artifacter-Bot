@@ -27,12 +27,12 @@ class Rasen(commands.Cog):
     group_rasen = RasenGroup()
 
     @group_rasen.command(name="生成")
-    async def cmd_random_rasen_gene(self, interaction: commands.Context):
+    async def cmd_random_rasen_gene(self, interaction: Interaction):
         """ランダムに螺旋の構成を生成します"""
         await interaction.response.send_message("ランダム螺旋コマンドが実行されました！")
 
     @group_rasen.command(name="設定")
-    async def cmd_random_rasen_set(self, interaction: commands.Context):
+    async def cmd_random_rasen_set(self, interaction: Interaction):
         """螺旋の設定を行います"""
         setting_view = SettingView()
         await interaction.response.send_message(view=setting_view)

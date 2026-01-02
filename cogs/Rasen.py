@@ -18,7 +18,7 @@ class BackToSettingButton(ui.Button):
 
     async def callback(self, interaction: commands.Context):
         setting_view = SettingView()
-        await interaction.response.edit_message(view=setting_view)
+        await interaction.response.edit_message(view=setting_view, ephemeral=True)
 
 
 class Rasen(commands.Cog):
@@ -70,7 +70,7 @@ class Rasen(commands.Cog):
     async def cmd_random_rasen_set(self, interaction: Interaction):
         """螺旋の設定を行います"""
         setting_view = SettingView()
-        await interaction.response.send_message(view=setting_view)
+        await interaction.response.send_message(view=setting_view, ephemeral=True)
 
 
 class RasenGenerateView(ui.LayoutView):
@@ -98,7 +98,7 @@ class CharacterSettingButton(ui.Button):
     async def callback(self, interaction: Interaction):
         data = await interaction.client.db.get_rasen_character(interaction.user.id)
         view = CharacterSettingView('./data/characters.json', data)
-        await interaction.response.edit_message(view=view)
+        await interaction.response.edit_message(view=view, ephemeral=True)
 
 
 class CharacterElementActionRow(ui.ActionRow):
@@ -213,7 +213,7 @@ class CharacterDeleteButton(ui.Button):
 
     async def callback(self, interaction: commands.Context):
         view = CharacterDeleteView()
-        await interaction.response.edit_message(view=view)
+        await interaction.response.edit_message(view=view, ephemeral=True)
 
 
 class CharacterDeleteSubmitButton(ui.Button):
@@ -223,7 +223,7 @@ class CharacterDeleteSubmitButton(ui.Button):
     async def callback(self, interaction: Interaction):
         user_id = interaction.user.id
         await interaction.client.db.remove_rasen_character(user_id)
-        return await interaction.response.edit_message(content="> 保有キャラクターのデータを削除しました。", view=None)
+        return await interaction.response.edit_message(content="> 保有キャラクターのデータを削除しました。", view=None, ephemeral=True)
 
 
 class CharacterDeleteView(ui.LayoutView):

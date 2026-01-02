@@ -150,8 +150,10 @@ class CharacterElementSelect(ui.Select):
         for chara_list in db_raw_chara.values():
             selected_ids.extend(chara_list)
 
+        element_ja = {'Ice': '氷', 'Wind': '風', 'Fire': '炎', 'Electric': '雷', 'Water': '水', 'Rock': '岩', 'Grass': '草'}
+
         await interaction.client.db.add_rasen_character(user_id, selected_ids)
-        await interaction.response.send_message(f"属性キャラを保存しました: {selected_ids}", ephemeral=True)
+        await interaction.response.send_message(f"{element_ja.get(element_from_custom_id)}属性キャラを保存しました", ephemeral=True)
 
 
 class CharacterSettingView(ui.LayoutView):

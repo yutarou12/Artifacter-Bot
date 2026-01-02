@@ -9,7 +9,7 @@ from discord import ui, ButtonStyle, Colour, SelectOption, Interaction, MediaGal
 
 from libs.Convert import load_characters_by_element, fetch_character, traveler_or_other_name
 from libs.Database import Database
-from libs.env import API_HOST_NAME
+from libs.env import API_HOST_NAME, API_PORT
 
 
 class BackToSettingButton(ui.Button):
@@ -47,7 +47,7 @@ class Rasen(commands.Cog):
             data = {
                 "data": random_character
             }
-            async with session.post(f'http://{API_HOST_NAME}:8085/api/spiral-generate', json=data) as r:
+            async with session.post(f'http://{API_HOST_NAME}:{API_PORT}/api/spiral-generate', json=data) as r:
                 if r.status != 200:
                     return await interaction.response.send_message("螺旋編成の生成に失敗しました。", ephemeral=True)
                 image_bytes = await r.content.read()

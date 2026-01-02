@@ -5,7 +5,7 @@ import shutil
 import requests
 from discord.ext import commands
 
-from libs.env import API_HOST_NAME
+from libs.env import API_HOST_NAME, API_PORT
 
 
 def add_file(resource: str, version: str, write_data: dict):
@@ -28,7 +28,7 @@ class Update(commands.Cog):
         if not version:
             return await ctx.send('No version')
 
-        res_1 = requests.get(f'http://{API_HOST_NAME}:8080/api/update/{version}/fetch')
+        res_1 = requests.get(f'http://{API_HOST_NAME}:{API_PORT}/api/update/{version}/fetch')
         if res_1.status_code == 404:
             return await ctx.send('404')
         elif res_1.status_code == 200:
@@ -37,7 +37,7 @@ class Update(commands.Cog):
             return await ctx.send(f'{res_1.status_code}')
 
         for file in ["lang", "chara", "pfps", "namecard"]:
-            res_2 = requests.get(f'http://{API_HOST_NAME}:8080/api/update/{version}/{file}')
+            res_2 = requests.get(f'http://{API_HOST_NAME}:{API_PORT}/api/update/{version}/{file}')
             res_2.encoding = res_2.apparent_encoding
             if file == 'lang':
                 res_data = res_2.json()
@@ -48,7 +48,7 @@ class Update(commands.Cog):
             self.bot.logger.info(res_2.encoding)
             self.bot.logger.info(f'完了 - {file}')
 
-        res_3 = requests.get(f'http://{API_HOST_NAME}:8080/api/update/{version}/images')
+        res_3 = requests.get(f'http://{API_HOST_NAME}:{API_PORT}/api/update/{version}/images')
         if res_3.status_code == 404:
             self.bot.logger.warning(res_3.content)
             return await ctx.send(f'/api/update/{version}/images - 404')

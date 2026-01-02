@@ -265,16 +265,21 @@ class SettingView(ui.LayoutView):
         ),
         ui.Separator(),
         ui.Section(
-            ui.TextDisplay(content='① 保有キャラクターの設定'),
+            ui.TextDisplay(content='➊ 保有キャラクターの設定'),
             accessory=CharacterSettingButton()
         ),
         ui.Section(
-            ui.TextDisplay(content='② 保有キャラクターの削除'),
+            ui.TextDisplay(content='➋ 保有キャラクターの削除'),
             accessory=CharacterDeleteButton()
         ),
         ui.Section(
-            ui.TextDisplay(content='③ 螺旋編成の保存'),
+            ui.TextDisplay(content='➌ 螺旋編成の保存'),
             accessory=CharacterSaveButton()
+        ),
+        ui.Separator(),
+        ui.Section(
+            ui.TextDisplay(content='Bot存続のため開発支援を受け付けています\n100円からの応援が励みになります！'),
+            accessory=ui.Button(label="➍", style=ButtonStyle.link, url='https://donate.stripe.com/3cI6oG6lz19k44t2hfenS09')
         ),
         accent_color=Colour.green(),
     )

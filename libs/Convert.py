@@ -67,6 +67,8 @@ def load_characters_by_element(json_path):
     elements = {}
     for cid, cdata in data.items():
         element = cdata.get('Element')
+        if element is None:
+            continue
         if element == "None":
             continue
         if element not in elements:

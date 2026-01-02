@@ -1,9 +1,15 @@
-from discord import app_commands
+import random
+from io import BytesIO
+
+import aiohttp
+from PIL import Image
+from discord import app_commands, File
 from discord.ext import commands
-from discord import ui, ButtonStyle, Colour, SelectOption, Interaction
+from discord import ui, ButtonStyle, Colour, SelectOption, Interaction, MediaGalleryItem
 
 from libs.Convert import load_characters_by_element, fetch_character, traveler_or_other_name
 from libs.Database import Database
+from libs.env import API_HOST_NAME
 
 
 class BackToSettingButton(ui.Button):
@@ -29,13 +35,60 @@ class Rasen(commands.Cog):
     @group_rasen.command(name="生成")
     async def cmd_random_rasen_gene(self, interaction: Interaction):
         """ランダムに螺旋の構成を生成します"""
-        await interaction.response.send_message("ランダム螺旋コマンドが実行されました！")
+        db_data = await self.db.get_rasen_character(interaction.user.id)
+        if not db_data:
+            return await interaction.response.send_message("保有キャラクターが設定されていません。まずは設定を行ってください。", ephemeral=True)
+
+        if len(db_data) < 8:
+            return await interaction.response.send_message("保有キャラクターが8体未満です。最低でも8体以上のキャラクターを設定してください。", ephemeral=True)
+
+        random_character = random.sample(db_data, 8)
+        async with aiohttp.ClientSession() as session:
+            data = {
+                "data": random_character
+            }
+            async with session.post(f'http://{API_HOST_NAME}:8085/api/spiral-generate', json=data) as r:
+                if r.status != 200:
+                    return await interaction.response.send_message("螺旋編成の生成に失敗しました。", ephemeral=True)
+                image_bytes = await r.content.read()
+                img = Image.open(BytesIO(image_bytes))
+
+                width, height = img.size
+                w, h = width, height // 2
+
+                for i in range(2):
+                    box = (0, i * h, w, (i + 1) * h)
+                    cropd_img = img.crop(box)
+                    cropd_img.save(f'./Tests/{interaction.user.id}-Spiral-Part{i+1}.png')
+
+        view = RasenGenerateView(interaction.user.id)
+        first_img = File(f'./Tests/{interaction.user.id}-Spiral-Part1.png', filename='Spiral-Part1.png')
+        second_img = File(f'./Tests/{interaction.user.id}-Spiral-Part2.png', filename='Spiral-Part2.png')
+        return await interaction.response.send_message(view=view, files=[first_img, second_img])
 
     @group_rasen.command(name="設定")
     async def cmd_random_rasen_set(self, interaction: Interaction):
         """螺旋の設定を行います"""
         setting_view = SettingView()
         await interaction.response.send_message(view=setting_view)
+
+
+class RasenGenerateView(ui.LayoutView):
+    def __init__(self, user_id):
+        super().__init__()
+
+        container = ui.Container(
+            ui.TextDisplay(content="# 螺旋編成ランダム生成"),
+            ui.Separator(),
+            ui.TextDisplay(content='第一層'),
+            ui.MediaGallery(MediaGalleryItem(media=f'attachment://Spiral-Part1.png')),
+            ui.Separator(),
+            ui.TextDisplay(content='第二層'),
+            ui.MediaGallery(MediaGalleryItem(media=f'attachment://Spiral-Part2.png')),
+            accent_color=Colour.green()
+        )
+
+        self.add_item(container)
 
 
 class CharacterSettingButton(ui.Button):

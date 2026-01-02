@@ -179,7 +179,7 @@ class ProductionDatabase:
             return bool(data)
 
     @check_connection
-    async def get_rasen_character(self, user_id: int):
+    async def get_rasen_character(self, user_id: int) -> list[str]:
         async with self.pool.acquire() as con:
             # data = await con.fetch("SELECT ARRAY_TO_STRING(ARRAY_AGG(unnested_value ORDER BY ordinality), ',') FROM rasen_character, UNNEST(character_data)  WITH ORDINALITY AS u(unnested_value, ordinality) WHERE user_id = $1;", user_id)
             data = await con.fetchval("SELECT array_to_string(character_data, ',') FROM rasen_character WHERE user_id = $1", user_id)

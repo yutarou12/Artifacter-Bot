@@ -223,7 +223,7 @@ class CharacterDeleteSubmitButton(ui.Button):
     async def callback(self, interaction: Interaction):
         user_id = interaction.user.id
         await interaction.client.db.remove_rasen_character(user_id)
-        return await interaction.response.edit_message("> 保有キャラクターのデータを削除しました。", view=None)
+        return await interaction.response.edit_message(content="> 保有キャラクターのデータを削除しました。", view=None)
 
 
 class CharacterDeleteView(ui.LayoutView):

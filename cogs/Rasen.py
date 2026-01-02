@@ -250,7 +250,7 @@ class CharacterSaveButton(ui.Button):
         super().__init__(label='③', style=ButtonStyle.green)
 
     async def callback(self, interaction: commands.Context):
-        await interaction.response.send_message("保有キャラクターの設定ボタンが押されました！", ephemeral=True)
+        await interaction.response.send_message("現在開発中", ephemeral=True)
 
 
 class SettingView(ui.LayoutView):

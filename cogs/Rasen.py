@@ -211,7 +211,7 @@ class CharacterDeleteButton(ui.Button):
 
     async def callback(self, interaction: commands.Context):
         view = CharacterDeleteView()
-        await interaction.response.send_message(view=view)
+        await interaction.response.edit_message(view=view)
 
 
 class CharacterDeleteSubmitButton(ui.Button):

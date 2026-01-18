@@ -13,7 +13,7 @@ def add_file(resource: str, version: str, write_data: dict):
         shutil.copyfile(f'./data/{resource}.json', f'./data/backup/{resource}-{version}.json')
         os.remove(f'./data/{resource}.json')
 
-    with open(f'./data/{resource}.json', mode='w') as f:
+    with open(f'./data/{resource}.json', mode='w', encoding='utf-8') as f:
         json.dump(write_data, f, indent=4, ensure_ascii=False)
 
     return True

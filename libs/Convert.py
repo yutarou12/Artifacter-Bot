@@ -26,15 +26,15 @@ def icon_convert(icon: Optional[Asset]) -> str:
         return icon.replace(format='png').url
 
 
-def medal_emoji_str_convert(medal_id: int) -> str:
+def medal_emoji_str_convert(medal_id: int) -> int:
     medal_dict = {
-        1: '<:LeyLineChallenge_Medal_1:1439224311830544504>',
-        2: '<:LeyLineChallenge_Medal_2:1439224308462391468>',
-        3: '<:LeyLineChallenge_Medal_3:1439224306302455919>',
-        4: '<:LeyLineChallenge_Medal_4:1439224303227769066>',
-        5: '<:LeyLineChallenge_Medal_5:1439224299507421214>',
-        6: '<:LeyLineChallenge_Medal_6:1439224290603044956>',
-        7: '<:LeyLineChallenge_Medal_7:1439224287562043462>',
+        1: 1439224311830544504,
+        2: 1439224308462391468,
+        3: 1439224306302455919,
+        4: 1439224303227769066,
+        5: 1439224299507421214,
+        6: 1439224290603044956,
+        7: 1439224287562043462,
     }
     return medal_dict.get(medal_id)
 

@@ -237,11 +237,7 @@ class Genshin(commands.Cog):
 
         # 幽境の激戦
         if player.get("Stygian").get("stygianIndex"):
-            emoji_id = medal_emoji_str_convert(player.get("Stygian").get("stygianIndex"))
-            guild = await self.bot.fetch_guild(OWNER_GUILD_ID)
-            emoji = await guild.fetch_emoji(emoji_id)
-
-            first_embed.add_field(name='幽境の激戦', value=f'{player.get("Stygian").get("stygianSeconds")}s | {emoji} ')
+            first_embed.add_field(name='幽境の激戦', value=f'{player.get("Stygian").get("stygianSeconds")}s | {medal_emoji_str_convert(player.get("Stygian").get("stygianIndex"))} ')
         else:
             first_embed.add_field(name='幽境の激戦', value='未記録')
 

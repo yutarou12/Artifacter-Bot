@@ -255,13 +255,19 @@ class Genshin(commands.Cog):
             first_embed.set_image(url=f'https://enka.network{player.get("NameCard")}')
 
         if not player["showAvatarInfo"]:
+            not_found_text = '1. 左上パイモンメニュー → 「**プロフィール編集**」\n' \
+                                '2. キャラクターラインナップで、キャラクターを選択\n' \
+                                '3. 左下の「**キャラ詳細表示中**」をONにする\n' \
+                                '4. 原神のログイン画面にもどる\n' \
+                                '5. 再度ログインしてコマンドを実行する\n'
+            not_found_embed = discord.Embed(title='ビルド画像を生成するには', description=not_found_text)
             file = discord.File(f'./image/genshin-profile-setting.png', filename='genshin-profile-setting.png')
-            first_embed.set_image(url='attachment://genshin-profile-setting.png')
+            not_found_embed.set_image(url='attachment://genshin-profile-setting.png')
 
             if ephemeral_mode:
-                return await interaction.followup.send(embed=first_embed, file=file, ephemeral=True)
+                return await interaction.followup.send(embeds=[first_embed, not_found_embed], file=file, ephemeral=True)
             else:
-                return await interaction.followup.send(embed=first_embed, file=file)
+                return await interaction.followup.send(embed=[first_embed, not_found_embed], file=file)
 
         # cs_view = Character Select View
         cs_view = BuildView()

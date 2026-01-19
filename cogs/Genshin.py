@@ -68,7 +68,7 @@ def is_me():
 
 user_party_cache: Mapping[int, dict] = {}
 
-OWNER_GUILD_ID = discord.Object(OWNER_GUILD_ID)
+OWNER_GUILD_OBJECT = discord.Object(OWNER_GUILD_ID)
 
 
 class Genshin(commands.Cog):

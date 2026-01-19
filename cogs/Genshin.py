@@ -267,7 +267,7 @@ class Genshin(commands.Cog):
             if ephemeral_mode:
                 return await interaction.followup.send(embeds=[first_embed, not_found_embed], file=file, ephemeral=True)
             else:
-                return await interaction.followup.send(embed=[first_embed, not_found_embed], file=file)
+                return await interaction.followup.send(embeds=[first_embed, not_found_embed], file=file)
 
         # cs_view = Character Select View
         cs_view = BuildView()

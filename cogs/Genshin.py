@@ -204,7 +204,7 @@ class Genshin(commands.Cog):
                     j = await r.json()
                     player = j.get("Player")
                     all_data = j.get("AllData")
-                    img_data = j.get("Img")
+                    profile_img = j.get("Img")
                     msg = None
                 elif r.status == 400:
                     msg = 'UIDが不正です。\nゲーム画面右下に表示されている9桁の数字を入力してください。'
@@ -254,22 +254,27 @@ class Genshin(commands.Cog):
         if player["NameCard"]:
             first_embed.set_image(url=f'https://enka.network{player.get("NameCard")}')
 
+        if not player["showAvatarInfo"]:
+            file = discord.File(f'./image/genshin-profile-setting.png', filename='genshin-profile-setting.png')
+            first_embed.set_image(url='attachment://genshin-profile-setting.png')
+
+            if ephemeral_mode:
+                return await interaction.followup.send(embed=first_embed, file=file, ephemeral=True)
+            else:
+                return await interaction.followup.send(embed=first_embed, file=file)
+
         # cs_view = Character Select View
         cs_view = BuildView()
-        if player["showAvatarInfo"]:
-            chara_select = FirstCharacterSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
+        chara_select = FirstCharacterSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
 
-            # キャラ選択セレクトメニュー作成
-            for i, chara in enumerate(player["showAvatarInfo"]):
-                avatar_id = str(chara.get("avatarId"))
-                name = fetch_character(avatar_id)
-                level = chara.get("level")
-                chara_select.add_option(label=name, description=f'Lv{level}', value=f'{i}')
-        else:
-            chara_select = FirstCharacterSelect(res_data=all_data, uid=uid, player=player, user=interaction.user)
-            chara_select.add_option(label='取得できません')
-
+        # キャラ選択セレクトメニュー作成
+        for i, chara in enumerate(player["showAvatarInfo"]):
+            avatar_id = str(chara.get("avatarId"))
+            name = fetch_character(avatar_id)
+            level = chara.get("level")
+            chara_select.add_option(label=name, description=f'Lv{level}', value=f'{i}')
         cs_view.add_item(chara_select)
+
         cs_view.add_item(TypeSelectButton(uid=uid, player=player, style=discord.ButtonStyle.green,
                                           label='ㅤ攻撃ㅤ', user=interaction.user, custom_id='攻撃'))
         cs_view.add_item(TypeSelectButton(uid=uid, player=player, style=discord.ButtonStyle.green,
@@ -284,7 +289,7 @@ class Genshin(commands.Cog):
                                           label='  会心  ', user=interaction.user, row=2, custom_id='会心'))
         cs_view.add_item(TypeSelectButton(uid=uid, player=player, style=discord.ButtonStyle.red,
                                           label='ㅤ終了ㅤ', user=interaction.user, row=2, custom_id='終了'))
-        if img_data:
+        if profile_img:
             # プロフィール画像有
             async with aiohttp.ClientSession() as session:
                 async with session.post(f'http://{API_HOST_NAME}:{API_PORT}/api/profile/get',
@@ -313,14 +318,15 @@ class Genshin(commands.Cog):
             try:
                 return await msg.edit(view=None)
             except discord.NotFound:
-                return
+                return None
+        else:
+            return None
 
     @cmd_build.error
     async def cmd_build_error(self, interaction, error):
         if isinstance(error, app_commands.CommandOnCooldown):
-            return await interaction.response.send_message(f'{math.floor(error.retry_after)} 秒後に使うことが出来ます。\n'
-                                                           f'過負荷防止の為にクールダウンを設けています。',
-                                                           ephemeral=True)
+            text = f'{math.floor(error.retry_after)} 秒後に使うことが出来ます。\n過負荷防止の為にクールダウンを設けています。'
+            return await interaction.response.send_message(text, ephemeral=True)
         else:
             raise error
 

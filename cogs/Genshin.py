@@ -254,7 +254,7 @@ class Genshin(commands.Cog):
         if player["NameCard"]:
             first_embed.set_image(url=f'https://enka.network{player.get("NameCard")}')
 
-        if not player["showAvatarInfo"]:
+        if not player["showAvatarInfo"] or not player["avatarInfoList"]:
             not_found_text = '1. 左上パイモンメニュー → 「**プロフィール編集**」\n' \
                                 '2. キャラクターラインナップで、キャラクターを選択\n' \
                                 '3. 左下の「**キャラ詳細表示中**」をONにする\n' \

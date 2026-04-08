@@ -36,7 +36,7 @@ class Update(commands.Cog):
         else:
             return await ctx.send(f'{res_1.status_code}')
 
-        for file in ["lang", "chara", "pfps", "namecard"]:
+        for file in ["lang", "chara", "pfps", "namecard", "relics"]:
             res_2 = requests.get(f'http://{API_HOST_NAME}:{API_PORT}/api/update/{version}/{file}')
             res_2.encoding = res_2.apparent_encoding
             if file == 'lang':
